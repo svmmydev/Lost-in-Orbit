@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 import { Player } from '../models/player';
 import { Blast } from '../models/playerBlast';
+import { Enemy } from '../models/enemy';
 
 export class Battle extends Phaser.Scene {
     background!: Phaser.GameObjects.TileSprite;
@@ -10,7 +11,8 @@ export class Battle extends Phaser.Scene {
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     spacebar?: Phaser.Input.Keyboard.Key;
     bullets!: Phaser.Physics.Arcade.Group;
-
+    enemies!: Phaser.Physics.Arcade.Group;
+    enemyBullets!: Phaser.Physics.Arcade.Group;
 
     constructor() {
         super('battle');
@@ -21,9 +23,12 @@ export class Battle extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background', 'assets/imgs/background/backgroundseamless.png')
-        this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 })
-        this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 })
+        this.load.image('background', 'assets/imgs/background/backgroundseamless.png');
+        this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 });
+        this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 });
+        this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png');
+        this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png');
+        this.load.image('enemyBlast', 'assets/imgs/enemy/enemy_shot.png');
     }
 
     create() {
@@ -47,6 +52,23 @@ export class Battle extends Phaser.Scene {
             classType: Blast,
             runChildUpdate: true
         });
+
+        this.enemies = this.physics.add.group();
+
+        this.enemyBullets = this.physics.add.group();
+
+        this.time.addEvent({
+            delay: 2000,
+            callback: () => {
+                const x = Phaser.Math.Between(50, this.scale.width - 50);
+                const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2']);
+                const newEnemy = new Enemy(this, x, -50, skin);
+                this.enemies.add(newEnemy);
+                newEnemy.setVelocityY(100);
+            },
+            callbackScope: this,
+            loop: true,
+        });
     }
 
     override update(time: number) {
@@ -57,5 +79,10 @@ export class Battle extends Phaser.Scene {
         if (Phaser.Input.Keyboard.JustDown(this.spacebar!)) {
             this.player.shoot(this.bullets, time);
         }
+
+        this.enemies.children.iterate((enemy: Phaser.GameObjects.GameObject) => {
+            (enemy as Enemy).update(time, this.enemyBullets);
+            return true;
+        });
     }
 }
