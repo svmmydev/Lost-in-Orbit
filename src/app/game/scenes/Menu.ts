@@ -2,10 +2,10 @@ import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 
 export class Menu extends Phaser.Scene {
-    private background!: Phaser.GameObjects.TileSprite;
-    private inputElement!: Phaser.GameObjects.DOMElement;
-    private playerName: string = '';
-    private errorText!: Phaser.GameObjects.Text;
+    background!: Phaser.GameObjects.TileSprite;
+    inputElement!: Phaser.GameObjects.DOMElement;
+    playerName: string = '';
+    errorText!: Phaser.GameObjects.Text;
 
     constructor() {
         super('menu');

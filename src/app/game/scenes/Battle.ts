@@ -1,9 +1,12 @@
 import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
+import { Player } from '../models/player';
 
 export class Battle extends Phaser.Scene {
-    private background!: Phaser.GameObjects.TileSprite;
-    private playerName: string = 'Anónimo';
+    background!: Phaser.GameObjects.TileSprite;
+    playerName: string = 'Anónimo';
+    player!: Player;
+
 
     constructor() {
         super('battle');
