@@ -1,13 +1,14 @@
 import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
-import { Player } from '../models/player';
-import { Blast } from '../models/playerBlast';
-import { Enemy } from '../models/enemy';
+import { Player } from '../models/player/player';
+import { Blast } from '../models/player/playerBlast';
+import { Enemy } from '../models/enemy/enemy';
 
 export class Battle extends Phaser.Scene {
     background!: Phaser.GameObjects.TileSprite;
     playerName: string = 'Anónimo';
     scoreText!: Phaser.GameObjects.Text;
+    livesText!: Phaser.GameObjects.Text;
     player!: Player;
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     spacebar?: Phaser.Input.Keyboard.Key;
@@ -36,6 +37,12 @@ export class Battle extends Phaser.Scene {
     create() {
         this.background = createBackground(this);
 
+        const centerX = this.scale.width / 2;
+        const bottomY = this.scale.height;
+
+        this.player = new Player(this, centerX, bottomY - 40);
+        this.player.setOrigin(0.5, 1);
+
         this.add.text(this.scale.width - 15, 15, this.playerName, {
             fontFamily: 'Verdana',
             fontSize: '17px',
@@ -48,11 +55,11 @@ export class Battle extends Phaser.Scene {
             color: '#ffffff',
         }).setOrigin(0, 0);
 
-        const centerX = this.scale.width / 2;
-        const bottomY = this.scale.height;
-
-        this.player = new Player(this, centerX, bottomY - 40);
-        this.player.setOrigin(0.5, 1);
+        this.livesText = this.add.text(15, 40, `Lives: ${this.player.getLives()}`, {
+            fontFamily: 'Verdana',
+            fontSize: '17px',
+            color: '#ffffff',
+        });
 
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.spacebar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -65,6 +72,14 @@ export class Battle extends Phaser.Scene {
         this.enemies = this.physics.add.group();
 
         this.enemyBullets = this.physics.add.group();
+
+        this.physics.add.overlap(
+            this.player,
+            this.enemyBullets,
+            this.handlePlayerHit as unknown as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
+            this
+        );
 
         this.physics.add.overlap(
             this.bullets,
@@ -122,4 +137,19 @@ export class Battle extends Phaser.Scene {
             }
         }
     }
+
+    handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, bullet: Phaser.GameObjects.GameObject) {
+        bullet.destroy();
+      
+        if (this.player.loseLife()) {
+            this.scene.start('gameover', { score: this.player.getData('score') });
+        } else {
+            this.cameras.main.shake(200, 0.01);
+            this.updateLivesText();
+        }
+    }
+    
+    updateLivesText() {
+        this.livesText.setText(`Lives: ${this.player.getLives()}`);
+    }      
 }

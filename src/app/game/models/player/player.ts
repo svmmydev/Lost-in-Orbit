@@ -5,6 +5,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     lastDirection: 'left' | 'right' | 'idle' = 'idle';
     shootCooldown = 800;
     lastShot = 0;
+    lives = 3;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'player');
@@ -87,5 +88,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
                 frameRate: 1
             })
         }
+    }
+
+    loseLife(): boolean {
+        this.lives--;
+        return this.lives <= 0;
+    }
+
+    getLives(): number {
+        return this.lives;
     }
 }

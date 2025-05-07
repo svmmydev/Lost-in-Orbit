@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { EnemyBlast } from "./enemyBlast";
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
-    shootCooldown = 1500;
+    shootCooldown = 2500;
     lastShot = 0;
     health = 2;
 
