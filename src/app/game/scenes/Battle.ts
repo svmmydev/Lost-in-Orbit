@@ -36,15 +36,17 @@ export class Battle extends Phaser.Scene {
     create() {
         this.background = createBackground(this);
 
-        this.add.text(20, 15, this.playerName, {
-            fontSize: '17px',
-            color: '#ffffff',
-        }).setOrigin(0);
-
-        this.scoreText = this.add.text(this.scale.width - 20, 15, 'Score: 0', {
+        this.add.text(this.scale.width - 15, 15, this.playerName, {
+            fontFamily: 'Verdana',
             fontSize: '17px',
             color: '#ffffff',
         }).setOrigin(1, 0);
+
+        this.scoreText = this.add.text(15, 15, 'Score: 0', {
+            fontFamily: 'Verdana',
+            fontSize: '17px',
+            color: '#ffffff',
+        }).setOrigin(0, 0);
 
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
@@ -77,7 +79,7 @@ export class Battle extends Phaser.Scene {
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
                 const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
-                const speed = Phaser.Math.Between(100, 180);
+                const speed = Phaser.Math.Between(100, 130);
                 const newEnemy = new Enemy(this, x, -50, skin);
                 this.enemies.add(newEnemy);
                 newEnemy.setVelocityY(speed);
@@ -85,10 +87,16 @@ export class Battle extends Phaser.Scene {
             callbackScope: this,
             loop: true,
         });
+
+        this.input.keyboard?.on('keydown-P', () => {
+            this.scene.launch('pause');
+            this.scene.pause();
+        });
+          
     }
 
     override update(time: number) {
-        scrollBackground(this.background, 0.6);
+        scrollBackground(this.background, 0.7);
 
         this.player.move(this.cursors!);
 

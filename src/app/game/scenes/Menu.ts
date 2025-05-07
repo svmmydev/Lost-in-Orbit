@@ -34,7 +34,7 @@ export class Menu extends Phaser.Scene {
     }
 
     override update() {
-        scrollBackground(this.background, 1);
+        scrollBackground(this.background, 0.1);
     }
       
     private procesarEntrada() {

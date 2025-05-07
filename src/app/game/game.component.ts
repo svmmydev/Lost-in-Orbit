@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Menu } from './scenes/Menu';
 import { Battle } from './scenes/Battle';
 import { Score } from './scenes/Score';
+import { Pause } from './scenes/Pause';
 
 @Component({
   selector: 'app-game',
@@ -19,7 +20,7 @@ export class GameComponent  implements OnInit {
       width: innerWidth,
       height: innerHeight,
       parent: 'game',
-      scene: [Battle, Menu, Score],
+      scene: [Battle, Menu, Score, Pause],
       dom: {
         createContainer: true
       },
