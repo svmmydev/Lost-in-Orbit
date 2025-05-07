@@ -11,6 +11,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
+        const newWidth = this.width * 0.7;
+        const newHeight = this.height * 0.5;
+
+        this.body!.setSize(newWidth, newHeight);
+
+        this.body!.setOffset(
+            (this.width - newWidth) / 2,
+            (this.height - newHeight) / 2
+        );
+
         this.setCollideWorldBounds(true);
     }
 

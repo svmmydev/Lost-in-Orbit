@@ -96,8 +96,7 @@ export class Battle extends Phaser.Scene {
     }
 
     handlePlayerBulletHitsEnemy(bullet: Phaser.GameObjects.GameObject, enemy: Phaser.GameObjects.GameObject) {
-        console.log('COLISIÓN', bullet, enemy);
         bullet.destroy();
         (enemy as Enemy).takeHit();
-      }
+    }
 }
