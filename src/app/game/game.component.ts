@@ -13,25 +13,32 @@ export class GameComponent  implements OnInit {
   game!: Phaser.Game;
   config: Phaser.Types.Core.GameConfig;
 
-  constructor() { 
+  constructor() {
     this.config = {
-          type: Phaser.AUTO,
-          width: innerWidth,
-          height: innerHeight,
-          parent: 'game',
-          scene: [Battle, Menu, Score],
-          dom: {
-            createContainer: true
-          },
-          physics: {
-            default: 'arcade',
-            arcade: { gravity: { x: 0, y: 0 }, debug: false }
-          }
+      type: Phaser.AUTO,
+      width: innerWidth,
+      height: innerHeight,
+      parent: 'game',
+      scene: [Battle, Menu, Score],
+      dom: {
+        createContainer: true
+      },
+      physics: {
+      default: 'arcade',
+      arcade: { gravity: { x: 0, y: 0 }, debug: false }
       }
+    }
   }
 
   ngOnInit() {
-    this.game = new Phaser.Game(this.config);
+    if (!this.game) {
+      this.game = new Phaser.Game(this.config);
+    }
   }
 
+  ngOnDestroy() {
+    if (this.game) {
+      this.game.destroy(true);
+    }
+  }
 }

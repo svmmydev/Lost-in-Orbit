@@ -1,7 +1,10 @@
 import Phaser from "phaser";
+import { Blast } from "./playerBlast";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-    private lastDirection: 'left' | 'right' | 'idle' = 'idle';
+    lastDirection: 'left' | 'right' | 'idle' = 'idle';
+    shootCooldown = 250;
+    lastShot = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'player');
@@ -40,6 +43,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       
         this.lastDirection = currentDirection;
     }
+
+    shoot(bullets: Phaser.Physics.Arcade.Group, time: number) {
+        if (time < this.lastShot + this.shootCooldown) return;
+    
+        const offsetX = 16;
+        const bulletY = this.y - 45;
+    
+        const left = new Blast(this.scene, this.x - offsetX, bulletY);
+        const right = new Blast(this.scene, this.x + offsetX, bulletY);
+    
+        bullets.add(left);
+        bullets.add(right);
+
+        left.body!.velocity.y = -400;
+        right.body!.velocity.y = -400;
+    
+        left.setActive(true).setVisible(true).play('bullet_anim');
+        right.setActive(true).setVisible(true).play('bullet_anim');
+    
+        this.lastShot = time;
+    }
+    
 
     addScore(amount: number) {
         this.setData('score', this.getData('score') + amount);
