@@ -79,7 +79,7 @@ export class Battle extends Phaser.Scene {
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
                 const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
-                const speed = Phaser.Math.Between(100, 130);
+                const speed = Phaser.Math.Between(120, 250);
                 const newEnemy = new Enemy(this, x, -50, skin);
                 this.enemies.add(newEnemy);
                 newEnemy.setVelocityY(speed);
