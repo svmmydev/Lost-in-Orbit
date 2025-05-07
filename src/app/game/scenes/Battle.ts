@@ -57,14 +57,23 @@ export class Battle extends Phaser.Scene {
 
         this.enemyBullets = this.physics.add.group();
 
+        this.physics.add.overlap(
+            this.bullets,
+            this.enemies,
+            this.handlePlayerBulletHitsEnemy as unknown as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
+            this
+        );
+          
         this.time.addEvent({
-            delay: 2000,
+            delay: 1500,
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
                 const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2']);
+                const speed = Phaser.Math.Between(100, 180);
                 const newEnemy = new Enemy(this, x, -50, skin);
                 this.enemies.add(newEnemy);
-                newEnemy.setVelocityY(100);
+                newEnemy.setVelocityY(speed);
             },
             callbackScope: this,
             loop: true,
@@ -72,7 +81,7 @@ export class Battle extends Phaser.Scene {
     }
 
     override update(time: number) {
-        scrollBackground(this.background, 1);
+        scrollBackground(this.background, 0.6);
 
         this.player.move(this.cursors!);
 
@@ -85,4 +94,10 @@ export class Battle extends Phaser.Scene {
             return true;
         });
     }
+
+    handlePlayerBulletHitsEnemy(bullet: Phaser.GameObjects.GameObject, enemy: Phaser.GameObjects.GameObject) {
+        console.log('COLISIÓN', bullet, enemy);
+        bullet.destroy();
+        (enemy as Enemy).takeHit();
+      }
 }

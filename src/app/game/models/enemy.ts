@@ -2,16 +2,24 @@ import Phaser from "phaser";
 import { EnemyBlast } from "./enemyBlast";
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
-    shootCooldown = 2000;
+    shootCooldown = 1500;
     lastShot = 0;
+    health = 2;
 
     constructor(scene: Phaser.Scene, x: number, y: number, skin: string) {
         super(scene, x, y, skin);
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setVelocityY(100);
         this.setCollideWorldBounds(true);
+    }
+
+    takeHit() {
+        this.health--;
+
+        if (this.health <= 0) {
+          this.destroy();
+        }
     }
 
     override update(time: number, bullets: Phaser.Physics.Arcade.Group) {
@@ -25,6 +33,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const blast = new EnemyBlast(this.scene, this.x, this.y + this.height / 2);
         bullets.add(blast);
         blast.setActive(true).setVisible(true);
-        blast.body!.velocity.y = 200;
+        blast.body!.velocity.y = 300;
     }
 }

@@ -3,7 +3,7 @@ import { Blast } from "./playerBlast";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     lastDirection: 'left' | 'right' | 'idle' = 'idle';
-    shootCooldown = 250;
+    shootCooldown = 800;
     lastShot = 0;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
