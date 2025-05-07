@@ -9,6 +9,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
         this.setDataEnabled();
         this.setData('score', 0);
+
+        this.createAnimations(scene);
     }
 
     move(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
@@ -16,9 +18,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
         if (cursors.left?.isDown) {
             this.setVelocityX(-160);
+            this.setFlipX(false);
             this.anims.play('left', true);
         } else if (cursors.right?.isDown) {
             this.setVelocity(160);
+            this.setFlipX(true);
             this.anims.play('right', true);
         } else {
             this.anims.play('idle', true);
@@ -27,5 +31,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     addScore(amount: number) {
         this.setData('score', this.getData('score') + amount);
+    }
+
+    createAnimations(scene: Phaser.Scene) {
+        if (!scene.anims.exists('left')) {
+            scene.anims.create({
+                key: 'left',
+                frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: 0
+            })
+        }
+
+        if (!scene.anims.exists('right')) {
+            scene.anims.create({
+                key: 'right',
+                frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: 0
+            })
+        }
+
+        if (!scene.anims.exists('idle')) {
+            scene.anims.create({
+                key: 'idle',
+                frames: [{ key: 'player', frame : 0 }],
+                frameRate: 1
+            })
+        }
     }
 }
