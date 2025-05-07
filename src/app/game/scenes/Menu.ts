@@ -1,10 +1,11 @@
 import * as Phaser from 'phaser';
-import { createBackground, scrollBackground } from 'src/app/utils/manageBackground';
+import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 
 export class Menu extends Phaser.Scene {
     private background!: Phaser.GameObjects.TileSprite;
     private inputElement!: Phaser.GameObjects.DOMElement;
     private playerName: string = '';
+    private errorText!: Phaser.GameObjects.Text;
 
     constructor() {
         super('menu');
@@ -43,7 +44,7 @@ export class Menu extends Phaser.Scene {
         this.playerName = input.value.trim();
         this.scene.start('battle', { playerName: this.playerName });
       } else {
-        alert('Introduce tu nombre');
+        this.errorText.setText('Introduce un nick');
       }
     }
 }

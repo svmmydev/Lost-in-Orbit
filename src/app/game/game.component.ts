@@ -1,0 +1,33 @@
+import { Component, OnInit } from '@angular/core';
+import { Menu } from './scenes/Menu';
+import { Battle } from './scenes/Battle';
+import { Score } from './scenes/Score';
+
+@Component({
+  selector: 'app-game',
+  templateUrl: './game.component.html',
+  styleUrls: ['./game.component.scss'],
+  standalone: true,
+})
+export class GameComponent  implements OnInit {
+  game!: Phaser.Game;
+  config: Phaser.Types.Core.GameConfig;
+
+  constructor() { 
+    this.config = {
+          type: Phaser.AUTO,
+          width: innerWidth,
+          height: innerHeight,
+          parent: 'game',
+          scene: [Battle, Menu, Score],
+          dom: {
+            createContainer: true
+          },
+      }
+  }
+
+  ngOnInit() {
+    this.game = new Phaser.Game(this.config);
+  }
+
+}

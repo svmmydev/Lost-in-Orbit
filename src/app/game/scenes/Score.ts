@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { createBackground, scrollBackground } from 'src/app/utils/manageBackground';
+import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 
 export class Score extends Phaser.Scene {
     private background!: Phaser.GameObjects.TileSprite;
