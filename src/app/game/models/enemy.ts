@@ -24,12 +24,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setCollideWorldBounds(true);
     }
 
-    takeHit() {
+    takeHit(): boolean {
         this.health--;
-
+        
         if (this.health <= 0) {
-          this.destroy();
+            this.destroy();
+            return true;
         }
+
+        return false;
     }
 
     override update(time: number, bullets: Phaser.Physics.Arcade.Group) {
@@ -43,6 +46,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const blast = new EnemyBlast(this.scene, this.x, this.y + this.height / 2);
         bullets.add(blast);
         blast.setActive(true).setVisible(true);
-        blast.body!.velocity.y = 300;
+        blast.body!.velocity.y = 280;
     }
 }

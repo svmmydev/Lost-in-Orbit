@@ -7,6 +7,7 @@ import { Enemy } from '../models/enemy';
 export class Battle extends Phaser.Scene {
     background!: Phaser.GameObjects.TileSprite;
     playerName: string = 'Anónimo';
+    scoreText!: Phaser.GameObjects.Text;
     player!: Player;
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     spacebar?: Phaser.Input.Keyboard.Key;
@@ -28,6 +29,7 @@ export class Battle extends Phaser.Scene {
         this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 });
         this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png');
         this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png');
+        this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png');
         this.load.image('enemyBlast', 'assets/imgs/enemy/enemy_shot.png');
     }
 
@@ -38,6 +40,11 @@ export class Battle extends Phaser.Scene {
             fontSize: '17px',
             color: '#ffffff',
         }).setOrigin(0);
+
+        this.scoreText = this.add.text(this.scale.width - 20, 15, 'Score: 0', {
+            fontSize: '17px',
+            color: '#ffffff',
+        }).setOrigin(1, 0);
 
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
@@ -69,7 +76,7 @@ export class Battle extends Phaser.Scene {
             delay: 1500,
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
-                const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2']);
+                const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
                 const speed = Phaser.Math.Between(100, 180);
                 const newEnemy = new Enemy(this, x, -50, skin);
                 this.enemies.add(newEnemy);
@@ -97,6 +104,14 @@ export class Battle extends Phaser.Scene {
 
     handlePlayerBulletHitsEnemy(bullet: Phaser.GameObjects.GameObject, enemy: Phaser.GameObjects.GameObject) {
         bullet.destroy();
-        (enemy as Enemy).takeHit();
+
+        if (enemy instanceof Enemy) {
+            const isDead = enemy.takeHit();
+
+            if (isDead) {
+                this.player.addScore(1);
+                this.scoreText.setText(`Score: ${this.player.getData('score')}`);
+            }
+        }
     }
 }
