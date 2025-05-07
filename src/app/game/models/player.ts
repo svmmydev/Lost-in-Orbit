@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
+    private lastDirection: 'left' | 'right' | 'idle' = 'idle';
+
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'player');
         scene.add.existing(this);
@@ -15,18 +17,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     move(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
         this.setVelocity(0);
-
+      
+        let currentDirection: 'left' | 'right' | 'idle' = 'idle';
+      
         if (cursors.left?.isDown) {
-            this.setVelocityX(-160);
+            this.setVelocityX(-200);
             this.setFlipX(false);
-            this.anims.play('left', true);
+            currentDirection = 'left';
         } else if (cursors.right?.isDown) {
-            this.setVelocity(160);
+            this.setVelocityX(200);
             this.setFlipX(true);
-            this.anims.play('right', true);
+            currentDirection = 'right';
+        }
+      
+        if (currentDirection !== 'idle') {
+            if (this.anims.currentAnim?.key !== 'move' || this.lastDirection !== currentDirection) {
+                this.anims.play('move');
+            }
         } else {
             this.anims.play('idle', true);
         }
+      
+        this.lastDirection = currentDirection;
     }
 
     addScore(amount: number) {
@@ -34,20 +46,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     createAnimations(scene: Phaser.Scene) {
-        if (!scene.anims.exists('left')) {
+        if (!scene.anims.exists('move')) {
             scene.anims.create({
-                key: 'left',
-                frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-                frameRate: 10,
-                repeat: 0
-            })
-        }
-
-        if (!scene.anims.exists('right')) {
-            scene.anims.create({
-                key: 'right',
-                frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
-                frameRate: 10,
+                key: 'move',
+                frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
+                frameRate: 25,
                 repeat: 0
             })
         }
