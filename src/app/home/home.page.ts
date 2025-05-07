@@ -17,10 +17,14 @@ export class HomePage {
 
   constructor() {
     this.config = {
+      type: Phaser.AUTO,
       width: innerWidth,
       height: innerHeight,
       parent: 'game',
       scene: [Menu, Battle, Score],
+      dom: {
+        createContainer: true
+      },
     }
   }
 
