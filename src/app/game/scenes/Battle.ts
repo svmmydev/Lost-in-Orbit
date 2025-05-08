@@ -157,7 +157,10 @@ export class Battle extends Phaser.Scene {
         }
       
         if (this.player.loseLife(damage)) {
-            this.scene.start('score', { score: this.player.getData('score') });
+            this.scene.start('score', {
+                score: this.player.getData('score'),
+                playerName: this.playerName
+            });
         } else {
             this.cameras.main.shake(200, 0.01);
             this.updateLivesText();
