@@ -82,6 +82,15 @@ export class Battle extends Phaser.Scene {
         );
 
         this.physics.add.overlap(
+            this.player,
+            this.enemies,
+            this.handlePlayerHit as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            undefined,
+            this
+        );
+        
+
+        this.physics.add.overlap(
             this.bullets,
             this.enemies,
             this.handlePlayerBulletHitsEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
@@ -138,10 +147,16 @@ export class Battle extends Phaser.Scene {
         }
     }
 
-    handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, bullet: Phaser.GameObjects.GameObject) {
-        bullet.destroy();
+    handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, damaginObj: Phaser.GameObjects.GameObject) {
+        damaginObj.destroy();
+
+        let damage = 1;
+
+        if (damaginObj instanceof Enemy) {
+            damage = 2;
+        }
       
-        if (this.player.loseLife()) {
+        if (this.player.loseLife(damage)) {
             this.scene.start('score', { score: this.player.getData('score') });
         } else {
             this.cameras.main.shake(200, 0.01);
