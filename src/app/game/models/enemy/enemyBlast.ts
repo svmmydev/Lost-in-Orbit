@@ -6,8 +6,10 @@ export class EnemyBlast extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setVelocityY(200);
         this.setCollideWorldBounds(true);
+        this.setVelocityY(200);
+
+        this.createAnimation(scene);
     }
 
     override preUpdate(time: number, delta: number) {
@@ -15,6 +17,17 @@ export class EnemyBlast extends Phaser.Physics.Arcade.Sprite {
 
         if (this.y > this.scene.scale.height + this.height) {
             this.destroy();
+        }
+    }
+
+    createAnimation(scene: Phaser.Scene) {
+        if (!scene.anims.exists('enemy_bullet')) {
+            scene.anims.create({
+                key: 'enemy_bullet',
+                frames: scene.anims.generateFrameNumbers('enemyBlast', { start: 0, end: 5 }),
+                frameRate: 20,
+                repeat: -1
+            });
         }
     }
 }

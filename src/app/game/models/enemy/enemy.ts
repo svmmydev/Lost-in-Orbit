@@ -22,12 +22,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         );
 
         this.setCollideWorldBounds(true);
+
+        this.createAnimations(scene);
     }
 
     takeHit(): boolean {
         this.health--;
         
         if (this.health <= 0) {
+            this.scene.physics.add.sprite(this.x, this.y, 'enemyDeath')
+                .setOrigin(0.5)
+                .setVelocityY(this.body!.velocity.y)
+                .play('enemyDeath');
             this.destroy();
             return true;
         }
@@ -47,5 +53,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         bullets.add(blast);
         blast.setActive(true).setVisible(true);
         blast.body!.velocity.y = 280;
+        blast.flipY = true;
+
+        blast.setActive(true).setVisible(true).play('enemy_bullet');
+    }
+
+    createAnimations(scene: Phaser.Scene) {
+        if (!scene.anims.exists('enemyDeath')) {
+            scene.anims.create({
+                key: 'enemyDeath',
+                frames: this.anims.generateFrameNumbers('enemyDeath', { start: 0, end: 5 }),
+                frameRate: 7,
+                hideOnComplete: true
+            });
+        }
     }
 }

@@ -1,5 +1,58 @@
-<div style="text-align: center;">
-    <input type="text" name="playerName" placeholder="Nickname"/>
+<!-- userForm.html -->
+<div class="form-container">
+    <input type="text" name="playerName" placeholder="Nickname" class="form-input" maxlength="5"/>
     <br><br>
-    <button type="button" name="startButton">Empezar</button>
+    <button type="button" name="startButton" class="form-button">PLAY</button>
+    <p id="errorMessage" class="error-text"></p>
 </div>
+
+<style>
+    .form-container {
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.212);
+        padding: 30px 40px;
+        border-radius: 16px;
+        font-family: 'pixel_font', monospace;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.63);
+    }
+  
+    .form-input {
+        padding: 8px 8px;
+        margin-top: 15px;
+        font-size: 15px;
+        border-radius: 4px;
+        border: 1px solid #ac6a07;
+        background-color: #111;
+        color: #fff;
+        font-family: 'pixel_font', monospace;
+        width: 220px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border: 1px solid #db8a10;
+    }
+  
+    .form-button {
+        margin-top: 20px;
+        padding: 6px 12px;
+        font-size: 12px;
+        background: #ac6a07;
+        color: white;
+        border: none;
+        height: 4vh;
+        width: 10vh;
+        border-radius: 4px;
+        font-family: 'pixel_font', monospace;
+        cursor: pointer;
+    }
+  
+    .error-text {
+        color: crimson;
+        font-size: 10px;
+        margin-top: 30px;
+        font-family: 'pixel_font', monospace;
+    }
+</style>

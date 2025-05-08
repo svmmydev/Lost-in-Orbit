@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 
-export class Blast extends Phaser.Physics.Arcade.Sprite {
+export class PlayerBlast extends Phaser.Physics.Arcade.Sprite {
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'playerBlast');
         scene.add.existing(this);

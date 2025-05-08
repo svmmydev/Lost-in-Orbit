@@ -1,8 +1,7 @@
 import * as Phaser from 'phaser';
-import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
+import { BaseScene } from './BaseScene';
 
-export class Score extends Phaser.Scene {
-    background!: Phaser.GameObjects.TileSprite;
+export class Score extends BaseScene {
     scoreText!: Phaser.GameObjects.Text;
     playerName: string = 'Anónimo';
     finalScore: number = 0;
@@ -29,12 +28,12 @@ export class Score extends Phaser.Scene {
         this.storedScores = scores;
     }
 
-    preload() {
-        this.load.image('background', 'assets/imgs/background/backgroundseamless.png')
+    override preload() {
+        super.preload();
     }
 
     create() {
-        this.background = createBackground(this);
+        this.createBackground();
 
         this.add.text(15, 60, 'Leaderboard:', {
             fontFamily: 'Verdana',
@@ -88,6 +87,6 @@ export class Score extends Phaser.Scene {
     }
 
     override update() {
-        scrollBackground(this.background, 0.1);
+        this.scrollBackground(0.1);
     }
 }

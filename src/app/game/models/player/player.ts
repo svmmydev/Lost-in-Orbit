@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { Blast } from "./playerBlast";
+import { PlayerBlast } from "./playerBlast";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     lastDirection: 'left' | 'right' | 'idle' = 'idle';
@@ -51,8 +51,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         const offsetX = 16;
         const bulletY = this.y - 45;
     
-        const left = new Blast(this.scene, this.x - offsetX, bulletY);
-        const right = new Blast(this.scene, this.x + offsetX, bulletY);
+        const left = new PlayerBlast(this.scene, this.x - offsetX, bulletY);
+        const right = new PlayerBlast(this.scene, this.x + offsetX, bulletY);
     
         bullets.add(left);
         bullets.add(right);

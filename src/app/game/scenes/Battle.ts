@@ -1,11 +1,11 @@
 import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 import { Player } from '../models/player/player';
-import { Blast } from '../models/player/playerBlast';
+import { PlayerBlast } from '../models/player/playerBlast';
 import { Enemy } from '../models/enemy/enemy';
+import { BaseScene } from './BaseScene';
 
-export class Battle extends Phaser.Scene {
-    background!: Phaser.GameObjects.TileSprite;
+export class Battle extends BaseScene {
     playerName: string = 'Anónimo';
     scoreText!: Phaser.GameObjects.Text;
     livesText!: Phaser.GameObjects.Text;
@@ -24,18 +24,20 @@ export class Battle extends Phaser.Scene {
         this.playerName = data.playerName ?? 'Anónimo';
     }
 
-    preload() {
-        this.load.image('background', 'assets/imgs/background/backgroundseamless.png');
-        this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 });
-        this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 });
-        this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png');
-        this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png');
-        this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png');
-        this.load.image('enemyBlast', 'assets/imgs/enemy/enemy_shot.png');
+    override preload() {
+        super.preload();
+        this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 })
+        this.load.spritesheet('enemyBlast', 'assets/imgs/sprites/EnemyBlaster.png', { frameWidth: 9, frameHeight: 27 })
+        this.load.spritesheet('enemyDeath', 'assets/imgs/sprites/Explosion1.png', { frameWidth: 64, frameHeight: 64 })
+        this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png')
+        this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png')
+        this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png')
+        this.load.image('enemyBlast', 'assets/imgs/enemy/enemy_shot.png')
     }
 
     create() {
-        this.background = createBackground(this);
+        this.createBackground();
 
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
@@ -43,29 +45,53 @@ export class Battle extends Phaser.Scene {
         this.player = new Player(this, centerX, bottomY - 40);
         this.player.setOrigin(0.5, 1);
 
-        this.add.text(this.scale.width - 15, 15, this.playerName, {
-            fontFamily: 'Verdana',
-            fontSize: '17px',
-            color: '#ffffff',
+        this.add.text(this.scale.width - 15, 12, this.playerName, {
+            fontFamily: 'pixel_font',
+            fontSize: '11px',
+            color: '#e29828',
+            shadow: {
+                offsetX: 0,
+                offsetY: 0,
+                color: '#00000',
+                blur: 3,
+                stroke: true,
+                fill: true
+            }
         }).setOrigin(1, 0);
 
-        this.scoreText = this.add.text(15, 15, 'Score: 0', {
-            fontFamily: 'Verdana',
-            fontSize: '17px',
-            color: '#ffffff',
+        this.scoreText = this.add.text(15, 12, 'Score: 0', {
+            fontFamily: 'pixel_font',
+            fontSize: '11px',
+            color: '#e29828',
+            shadow: {
+                offsetX: 0,
+                offsetY: 0,
+                color: '#00000',
+                blur: 3,
+                stroke: true,
+                fill: true
+            }
         }).setOrigin(0, 0);
 
-        this.livesText = this.add.text(15, 40, `Lives: ${this.player.getLives()}`, {
-            fontFamily: 'Verdana',
-            fontSize: '17px',
-            color: '#ffffff',
-        });
+        this.livesText = this.add.text(this.scale.width / 2, 12, `Lives: ${this.player.getLives()}`, {
+            fontFamily: 'pixel_font',
+            fontSize: '11px',
+            color: '#e29828',
+            shadow: {
+                offsetX: 0,
+                offsetY: 0,
+                color: '#00000',
+                blur: 3,
+                stroke: true,
+                fill: true
+            }
+        }).setOrigin(0.32, 0);
 
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.spacebar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.bullets = this.physics.add.group({
-            classType: Blast,
+            classType: PlayerBlast,
             runChildUpdate: true
         });
 
@@ -120,7 +146,7 @@ export class Battle extends Phaser.Scene {
     }
 
     override update(time: number) {
-        scrollBackground(this.background, 0.7);
+        this.scrollBackground(0.7);
 
         this.player.move(this.cursors!);
 

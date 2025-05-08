@@ -1,9 +1,9 @@
 import * as Phaser from 'phaser';
-import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
+import { BaseScene } from './BaseScene';
 
-export class Menu extends Phaser.Scene {
-    background!: Phaser.GameObjects.TileSprite;
+export class Menu extends BaseScene {
     inputElement!: Phaser.GameObjects.DOMElement;
+    inputElements!: Phaser.GameObjects.DOMElement;
     playerName: string = '';
     errorText!: Phaser.GameObjects.Text;
 
@@ -11,21 +11,32 @@ export class Menu extends Phaser.Scene {
         super('menu');
     }
 
-    preload() {
-        this.load.image('background', 'assets/imgs/background/backgroundseamless.png')
+    override preload() {
+        super.preload();
         this.load.html('userForm', 'assets/html/userForm.html')
+        this.load.image('logo', 'assets/imgs/general/lostinorbit.png')
     }
 
     create() {
-        this.background = createBackground(this);
+        this.createBackground();
+
+        this.add.image(this.scale.width / 1.95, 235, 'logo')
+          .setTint(0x000000)
+          .setAlpha(0.15)
+          .setScale(0.27)
+          .setOrigin(0.5);
+
+        this.add.image(this.scale.width / 2, 230, 'logo')
+          .setOrigin(0.5)
+          .setScale(0.25);
       
-        this.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 2).createFromCache('userForm');
+        this!.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 1.75).createFromCache('userForm');
       
         this.inputElement.addListener('click');
         this.inputElement.on('click', (event: any) => {
-          if (event.target.name === 'startButton') {
-            this.procesarEntrada();
-          }
+            if (event.target.name === 'startButton') {
+              this.procesarEntrada();
+            }
         });
       
         this.input.keyboard?.on('keydown-ENTER', () => {
@@ -34,17 +45,18 @@ export class Menu extends Phaser.Scene {
     }
 
     override update() {
-        scrollBackground(this.background, 0.1);
+        this.scrollBackground(0.1);
     }
       
     private procesarEntrada() {
       const input = this.inputElement.getChildByName('playerName') as HTMLInputElement;
+      const errorMessage = this.inputElement.getChildByID('errorMessage') as HTMLParagraphElement;
     
       if (input?.value.trim()) {
-        this.playerName = input.value.trim();
+        this.playerName = input.value.trim().toUpperCase();
         this.scene.start('battle', { playerName: this.playerName });
       } else {
-        this.errorText.setText('Introduce un nick');
+        errorMessage.textContent = 'Insert a nick';
       }
     }
 }
