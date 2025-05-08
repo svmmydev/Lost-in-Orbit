@@ -16,7 +16,7 @@ export class Score extends Phaser.Scene {
         this.finalScore = data.score;
         this.playerName = data.playerName ?? 'Anónimo';
 
-        const scoresJson = localStorage.getItem('playersScores');
+        const scoresJson = localStorage.getItem('playerScores');
         const scores = scoresJson ? JSON.parse(scoresJson) : {};
 
         const previousRecord = scores[this.playerName] ?? 0;
@@ -54,6 +54,37 @@ export class Score extends Phaser.Scene {
             }).setOrigin(0, 0);
             offsetY += 25;
         }
+
+        this.add.text(15, 50, 'G A M E    O V E R', {
+            fontSize: '16px',
+            fontFamily: 'Verdana',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0, 0);
+
+        this.add.text(15, 120, '[R] Repeat   |   [N] New player', {
+            fontSize: '16px',
+            fontFamily: 'Verdana',
+            color: '#ffffff',
+            align: 'center'
+        }).setOrigin(0, 0);
+
+        this.input.keyboard?.on('keydown-N', () => {
+            this.scene.stop();
+            this.scene.start('menu');
+        });
+
+        this.input.keyboard?.on('keydown-R', () => {
+            const battleScene = this.scene.get('battle');
+
+            this.scene.stop();
+            
+            this.scene.stop('battle');
+
+            this.scene.start('battle', {
+                playerName: (battleScene as any).playerName
+            });
+        });
     }
 
     override update() {

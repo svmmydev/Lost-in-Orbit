@@ -6,13 +6,13 @@ export class Pause extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
     
-        this.add.text(width / 2, height / 2, 'P A U S A', {
+        this.add.text(width / 2, height / 2, 'P A U S E', {
             fontSize: '40px',
             fontFamily: 'Verdana',
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, height, '[P] Reanudar    |    [R] Reiniciar', {
+        this.add.text(width / 2, height, '[P] Resume    |    [R] Reset', {
             fontSize: '16px',
             fontFamily: 'Verdana',
             color: '#ffffff',
