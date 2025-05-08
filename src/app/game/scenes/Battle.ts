@@ -76,7 +76,7 @@ export class Battle extends Phaser.Scene {
         this.physics.add.overlap(
             this.player,
             this.enemyBullets,
-            this.handlePlayerHit as unknown as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            this.handlePlayerHit as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
             undefined,
             this
         );
@@ -84,7 +84,7 @@ export class Battle extends Phaser.Scene {
         this.physics.add.overlap(
             this.bullets,
             this.enemies,
-            this.handlePlayerBulletHitsEnemy as unknown as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+            this.handlePlayerBulletHitsEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
             undefined,
             this
         );
@@ -142,7 +142,7 @@ export class Battle extends Phaser.Scene {
         bullet.destroy();
       
         if (this.player.loseLife()) {
-            this.scene.start('gameover', { score: this.player.getData('score') });
+            this.scene.start('score', { score: this.player.getData('score') });
         } else {
             this.cameras.main.shake(200, 0.01);
             this.updateLivesText();
