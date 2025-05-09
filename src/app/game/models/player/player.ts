@@ -60,8 +60,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         left.body!.velocity.y = -400;
         right.body!.velocity.y = -400;
     
-        left.setActive(true).setVisible(true).play('bullet_anim');
-        right.setActive(true).setVisible(true).play('bullet_anim');
+        left.setActive(true).setVisible(true).setScale(1.3).play('bullet_anim');
+        right.setActive(true).setVisible(true).setScale(1.3).play('bullet_anim');
     
         this.lastShot = time;
     }

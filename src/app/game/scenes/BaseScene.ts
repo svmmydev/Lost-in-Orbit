@@ -7,7 +7,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
     preload() {
         if (!this.textures.exists('background')) {
-        this.load.image('background', 'assets/imgs/background/backgroundseamless.png');
+            this.load.image('background', 'assets/imgs/background/backgroundseamless.png');
         }
     }
 
@@ -17,7 +17,7 @@ export abstract class BaseScene extends Phaser.Scene {
 
     scrollBackground(speed: number = 1) {
         if (this.background) {
-        scrollBackground(this.background, speed);
+            scrollBackground(this.background, speed);
         }
     }
 }
