@@ -89,10 +89,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             })
         }
     }
-
+    //TODO
     loseLife(damage: number = 1): boolean {
         this.lives -= damage;
-        return this.lives <= 0;
+        // return this.lives <= 0;
+        return false;
     }
 
     getLives(): number {

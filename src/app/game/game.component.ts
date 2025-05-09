@@ -20,7 +20,7 @@ export class GameComponent  implements OnInit {
       width: innerWidth,
       height: innerHeight,
       parent: 'game',
-      scene: [ Menu, Battle, Score, Pause ],
+      scene: [ Battle, Menu, Score, Pause ],
       dom: {
         createContainer: true
       },

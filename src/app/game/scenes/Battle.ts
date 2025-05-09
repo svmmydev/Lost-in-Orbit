@@ -174,13 +174,14 @@ export class Battle extends BaseScene {
     }
 
     handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, damaginObj: Phaser.GameObjects.GameObject) {
-        damaginObj.destroy();
-
         let damage = 1;
 
         if (damaginObj instanceof Enemy) {
             damage = 2;
+            damaginObj.takeHit(damage);
         }
+
+        damaginObj.destroy();
       
         if (this.player.loseLife(damage)) {
             this.scene.start('score', {
