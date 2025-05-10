@@ -23,16 +23,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.createAnimations(scene);
     }
 
-    move(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
+    move(cursors: Phaser.Types.Input.Keyboard.CursorKeys, moveLeft: boolean, moveRight: boolean) {
         this.setVelocity(0);
       
         let currentDirection: 'left' | 'right' | 'idle' = 'idle';
       
-        if (cursors.left?.isDown) {
+        if (cursors.left?.isDown || moveLeft) {
             this.setVelocityX(-270);
             this.setFlipX(false);
             currentDirection = 'left';
-        } else if (cursors.right?.isDown) {
+        } else if (cursors.right?.isDown || moveRight) {
             this.setVelocityX(270);
             this.setFlipX(true);
             currentDirection = 'right';
@@ -95,17 +95,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     loseLife(damage: number = 1): boolean {
-        if (this.lives <= 0) return true;
+        // if (this.lives <= 0) return true;
 
         this.lives -= damage;
 
-        if (this.lives <= 0) {
-            this.lives = 0;
-            this.isDead = true;
-            this.setVelocity(0);
-            this.anims.play('idle', true);
-            return true;
-        }
+        // if (this.lives <= 0) {
+        //     this.lives = 0;
+        //     this.isDead = true;
+        //     this.setVelocity(0);
+        //     this.anims.play('idle', true);
+        //     return true;
+        // }
 
         return false;
     }

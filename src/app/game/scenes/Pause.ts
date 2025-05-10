@@ -19,7 +19,7 @@ export class Pause extends Phaser.Scene {
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, height / 2 + 50, '[P] Resume\n\n[R] Reset', {
+        this.add.text(width / 2, height / 2 + 50, '[P] Resume\n\n\n[R] Reset\n\n\n[N] New player', {
             fontSize: '13px',
             fontFamily: 'pixel_font',
             color: '#ffffff',
@@ -42,6 +42,13 @@ export class Pause extends Phaser.Scene {
             this.scene.start('battle', {
                 playerName: (battleScene as any).playerName
             });
+        });
+
+        this.input.keyboard?.on('keydown-N', () => {
+            this.scene.stop();
+            this.scene.stop('battle');
+            this.music.stop();
+            this.scene.start('menu');
         });
     }
 }

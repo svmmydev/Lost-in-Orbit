@@ -3,9 +3,13 @@ import { Player } from '../models/player/player';
 import { PlayerBlast } from '../models/player/playerBlast';
 import { Enemy } from '../models/enemy/enemy';
 import { BaseScene } from './BaseScene';
+import { createTouchButton } from '../utils/touchControlHelper';
 
 export class Battle extends BaseScene {
     playerName: string = 'Anónimo';
+    moveLeft = false;
+    moveRight = false;
+    tryShoot = false;
     scoreText!: Phaser.GameObjects.Text;
     livesText!: Phaser.GameObjects.Text;
     player!: Player;
@@ -34,6 +38,8 @@ export class Battle extends BaseScene {
         this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png')
         this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png')
         this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png')
+        this.load.image('arrow', 'assets/imgs/general/arrow.png')
+        this.load.image('shot', 'assets/imgs/general/shot.png')
         this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
         this.load.audio('explosion', 'assets/sounds/explosion.ogg')
         this.load.audio('playerexplosion', 'assets/sounds/playerexplosion.ogg')
@@ -52,6 +58,45 @@ export class Battle extends BaseScene {
         this.music.play();
         
         this.isGameOver = false;
+
+        const btnWidth = this.scale.width / 2;
+        const btnHeight = 90;
+
+        createTouchButton(
+            this,
+            0,
+            this.scale.height,
+            btnWidth,
+            btnHeight,
+            'arrow',
+            { scale: 0.15, origin: [0, 1], offsetY: 10, alpha: 0.2, flipX: true },
+            () => this.moveLeft = true,
+            () => this.moveLeft = false
+        );
+
+        createTouchButton(
+            this,
+            this.scale.width,
+            this.scale.height,
+            btnWidth,
+            btnHeight,
+            'arrow',
+            { scale: 0.15, origin: [1, 1], offsetY: 10, alpha: 0.2 },
+            () => this.moveRight = true,
+            () => this.moveRight = false
+        );
+
+        createTouchButton(
+            this,
+            this.scale.width,
+            this.scale.height - 90,
+            100,
+            btnHeight + 80,
+            'shot',
+            { scale: 3, origin: [1, 1], offsetX: -10, offsetY: 120, alpha: 0.1, rotation: Phaser.Math.DegToRad(-90) },
+            () => this.tryShoot = true,
+            () => this.tryShoot = false
+        );
 
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
@@ -139,7 +184,7 @@ export class Battle extends BaseScene {
         );
           
         this.time.addEvent({
-            delay: 1500,
+            delay: 1200,
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
                 const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
@@ -155,7 +200,7 @@ export class Battle extends BaseScene {
         this.input.keyboard?.on('keydown-P', () => {
             this.scene.launch('pause', { music: this.music });
             this.scene.pause();
-            this.music.setVolume(0.01);
+            this.music.setVolume(0.02);
         });
           
     }
@@ -164,10 +209,11 @@ export class Battle extends BaseScene {
         if (!this.isGameOver) {
             this.scrollBackground(0.7);
 
-            this.player.move(this.cursors!);
+            this.player.move(this.cursors!, this.moveLeft, this.moveRight);
 
-            if (Phaser.Input.Keyboard.JustDown(this.spacebar!)) {
+            if (Phaser.Input.Keyboard.JustDown(this.spacebar!) || this.tryShoot) {
                 this.player.shoot(this.bullets, time);
+                this.tryShoot = false;
             }
 
             this.enemies.children.iterate((enemy: Phaser.GameObjects.GameObject) => {
@@ -198,7 +244,10 @@ export class Battle extends BaseScene {
 
         if (damaginObj instanceof Enemy) {
             damage = 2;
-            damaginObj.takeHit(damage);
+            const isDead = damaginObj.takeHit(damage);
+            if (isDead) {
+                this.sound.play('explosion', { volume: 0.3 })
+            }
         }
 
         damaginObj.destroy();
@@ -254,5 +303,4 @@ export class Battle extends BaseScene {
             }
         });
     }
-
 }
