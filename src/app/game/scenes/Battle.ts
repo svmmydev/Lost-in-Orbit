@@ -15,6 +15,7 @@ export class Battle extends BaseScene {
     enemies!: Phaser.Physics.Arcade.Group;
     enemyBullets!: Phaser.Physics.Arcade.Group;
     isGameOver!: boolean;
+    music!: Phaser.Sound.WebAudioSound;
 
     constructor() {
         super('battle');
@@ -33,10 +34,23 @@ export class Battle extends BaseScene {
         this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png')
         this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png')
         this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png')
+        this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
+        this.load.audio('explosion', 'assets/sounds/explosion.ogg')
+        this.load.audio('playerexplosion', 'assets/sounds/playerexplosion.ogg')
     }
 
     create() {
         this.createBackground();
+
+        const soundConfig: Phaser.Types.Sound.SoundConfig = {
+            loop: true,
+            volume: 0.08
+        }
+
+        this.music = this.sound.add('battlesong', soundConfig) as Phaser.Sound.WebAudioSound;
+
+        this.music.play();
+        
         this.isGameOver = false;
 
         const centerX = this.scale.width / 2;
@@ -139,8 +153,9 @@ export class Battle extends BaseScene {
         });
 
         this.input.keyboard?.on('keydown-P', () => {
-            this.scene.launch('pause');
+            this.scene.launch('pause', { music: this.music });
             this.scene.pause();
+            this.music.setVolume(0.01);
         });
           
     }
@@ -169,6 +184,7 @@ export class Battle extends BaseScene {
             const isDead = enemy.takeHit();
 
             if (isDead) {
+                this.sound.play('explosion', { volume: 0.3 })
                 this.player.addScore(1);
                 this.scoreText.setText(`Score: ${this.player.getData('score')}`);
             }
@@ -176,6 +192,8 @@ export class Battle extends BaseScene {
     }
 
     handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, damaginObj: Phaser.GameObjects.GameObject) {
+        if (this.isGameOver) return;
+
         let damage = 1;
 
         if (damaginObj instanceof Enemy) {
@@ -186,11 +204,15 @@ export class Battle extends BaseScene {
         damaginObj.destroy();
       
         if (this.player.loseLife(damage)) {
-            this.updateLivesText();
             this.isGameOver = true;
+            
+            this.updateLivesText();
+
+            this.music.stop();
             this.spawnExplosionsRafagas();
 
             this.time.delayedCall(3000, () => {
+                this.music.stop();
                 this.scene.start('score', {
                     score: this.player.getData('score'),
                     playerName: this.playerName
@@ -227,6 +249,7 @@ export class Battle extends BaseScene {
                         .setOrigin(0.5)
                         .play('death');
                 });
+                this.sound.play('playerexplosion', { volume: 0.1 })
                 count++;
             }
         });

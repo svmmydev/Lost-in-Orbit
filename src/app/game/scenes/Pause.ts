@@ -1,7 +1,13 @@
 
 export class Pause extends Phaser.Scene {
+    music!: Phaser.Sound.WebAudioSound;
+
     constructor() {
         super('pause');
+    }
+
+    init(data: { music: Phaser.Sound.WebAudioSound }) {
+        this.music = data.music;
     }
   
     create() {
@@ -21,6 +27,7 @@ export class Pause extends Phaser.Scene {
         }).setOrigin(0.5);
   
         this.input.keyboard?.on('keydown-P', () => {
+            this.music.setVolume(0.08);
             this.scene.stop();
             this.scene.resume('battle');
         });
@@ -29,8 +36,8 @@ export class Pause extends Phaser.Scene {
             const battleScene = this.scene.get('battle');
 
             this.scene.stop();
-            
             this.scene.stop('battle');
+            this.music.stop();
 
             this.scene.start('battle', {
                 playerName: (battleScene as any).playerName

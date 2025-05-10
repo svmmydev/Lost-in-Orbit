@@ -6,6 +6,7 @@ export class Score extends BaseScene {
     playerName: string = 'Anónimo';
     finalScore: number = 0;
     storedScores: { [key: string]: number } = {};
+    music!: Phaser.Sound.BaseSound;
 
     constructor() {
         super('score');
@@ -38,12 +39,22 @@ export class Score extends BaseScene {
         this.createBackground();
         this.createLeaderboard();
 
+        const soundConfig: Phaser.Types.Sound.SoundConfig = {
+            loop: true,
+            volume: 0.08
+        }
+                
+        this.music = this.sound.add('generalbso', soundConfig) as Phaser.Sound.WebAudioSound;
+        this.music.play();
+
         this.input.keyboard?.on('keydown-N', () => {
+            this.music.stop();
             this.scene.stop();
             this.scene.start('menu');
         });
 
         this.input.keyboard?.on('keydown-R', () => {
+            this.music.stop();
             const battleScene = this.scene.get('battle');
             this.scene.stop();
             this.scene.stop('battle');
