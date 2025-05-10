@@ -11,11 +11,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        const newWidth = this.width * 0.7;
+        const newWidth = this.width * 0.9;
         const newHeight = this.height * 0.5;
 
         this.body!.setSize(newWidth, newHeight);
-
         this.body!.setOffset(
             (this.width - newWidth) / 2,
             (this.height - newHeight) / 2
@@ -56,10 +55,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     createAnimations(scene: Phaser.Scene) {
-        if (!scene.anims.exists('enemyDeath')) {
+        if (!scene.anims.exists('death')) {
             scene.anims.create({
-                key: 'enemyDeath',
-                frames: this.anims.generateFrameNumbers('enemyDeath', { start: 0, end: 8 }),
+                key: 'death',
+                frames: this.anims.generateFrameNumbers('death', { start: 0, end: 8 }),
                 frameRate: 15,
                 hideOnComplete: true
             });
@@ -67,9 +66,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     private explode() {
-        this.scene.physics.add.sprite(this.x, this.y, 'enemyDeath')
+        this.scene.physics.add.sprite(this.x, this.y, 'death')
                 .setOrigin(0.5)
                 .setVelocityY(this.body!.velocity.y)
-                .play('enemyDeath');
+                .play('death');
     }
 }

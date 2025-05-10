@@ -1,3 +1,4 @@
+
 export class Pause extends Phaser.Scene {
     constructor() {
         super('pause');
@@ -6,18 +7,18 @@ export class Pause extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
     
-        this.add.text(width / 2, height / 2, 'P A U S E', {
-            fontSize: '40px',
-            fontFamily: 'Verdana',
+        this.add.text(width / 2, height / 2 - 50, 'P A U S E', {
+            fontSize: '25px',
+            fontFamily: 'pixel_font',
             color: '#ffffff',
         }).setOrigin(0.5);
 
-        this.add.text(width / 2, height, '[P] Resume    |    [R] Reset', {
-            fontSize: '16px',
-            fontFamily: 'Verdana',
+        this.add.text(width / 2, height / 2 + 50, '[P] Resume\n\n[R] Reset', {
+            fontSize: '13px',
+            fontFamily: 'pixel_font',
             color: '#ffffff',
             align: 'center'
-        }).setOrigin(0.5, 21);
+        }).setOrigin(0.5);
   
         this.input.keyboard?.on('keydown-P', () => {
             this.scene.stop();

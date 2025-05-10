@@ -3,18 +3,22 @@ import { PlayerBlast } from "./playerBlast";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
     lastDirection: 'left' | 'right' | 'idle' = 'idle';
-    shootCooldown = 800;
+    shootCooldown = 750;
     lastShot = 0;
     lives = 3;
+    isDead = false;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'player');
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
-        this.setCollideWorldBounds(true);
+        this.body!.setSize(40, 40);
+        this.body!.setOffset(12, 15);
+
         this.setDataEnabled();
         this.setData('score', 0);
+        this.setCollideWorldBounds(true);
 
         this.createAnimations(scene);
     }
@@ -25,11 +29,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         let currentDirection: 'left' | 'right' | 'idle' = 'idle';
       
         if (cursors.left?.isDown) {
-            this.setVelocityX(-200);
+            this.setVelocityX(-270);
             this.setFlipX(false);
             currentDirection = 'left';
         } else if (cursors.right?.isDown) {
-            this.setVelocityX(200);
+            this.setVelocityX(270);
             this.setFlipX(true);
             currentDirection = 'right';
         }
@@ -76,7 +80,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             scene.anims.create({
                 key: 'move',
                 frames: scene.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
-                frameRate: 25,
+                frameRate: 20,
                 repeat: 0
             })
         }
@@ -89,10 +93,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
             })
         }
     }
-    //TODO
+    
     loseLife(damage: number = 1): boolean {
+        if (this.lives <= 0) return true;
+
         this.lives -= damage;
-        // return this.lives <= 0;
+
+        if (this.lives <= 0) {
+            this.lives = 0;
+            this.isDead = true;
+            this.setVelocity(0);
+            this.anims.play('idle', true);
+            return true;
+        }
+
         return false;
     }
 

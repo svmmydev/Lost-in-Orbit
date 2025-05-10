@@ -20,13 +20,13 @@ export class GameComponent  implements OnInit {
       width: innerWidth,
       height: innerHeight,
       parent: 'game',
-      scene: [ Battle, Menu, Score, Pause ],
+      scene: [ Menu, Battle, Score, Pause ],
       dom: {
         createContainer: true
       },
       physics: {
       default: 'arcade',
-      arcade: { gravity: { x: 0, y: 0 }, debug: false }
+      arcade: { gravity: { x: 0, y: 0 }, debug: true }
       }
     }
   }

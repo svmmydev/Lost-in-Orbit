@@ -20,17 +20,17 @@ export class Menu extends BaseScene {
     create() {
         this.createBackground();
 
-        this.add.image(this.scale.width / 1.95, 235, 'logo')
+        this.add.image(this.scale.width / 1.9, this.scale.height / 2.93, 'logo')
           .setTint(0x000000)
-          .setAlpha(0.15)
-          .setScale(0.27)
+          .setAlpha(0.18)
+          .setScale(0.24)
           .setOrigin(0.5);
 
-        this.add.image(this.scale.width / 2, 230, 'logo')
+        this.add.image(this.scale.width / 2, this.scale.height / 3.05, 'logo')
           .setOrigin(0.5)
           .setScale(0.25);
       
-        this!.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 1.75).createFromCache('userForm');
+        this!.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 2).createFromCache('userForm').setOrigin(0.5, 0);
       
         this.inputElement.addListener('click');
         this.inputElement.on('click', (event: any) => {

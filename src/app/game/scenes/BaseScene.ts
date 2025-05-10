@@ -1,4 +1,3 @@
-// src/app/game/scenes/BaseScene.ts
 import * as Phaser from 'phaser';
 import { createBackground, scrollBackground } from 'src/app/game/utils/manageBackground';
 
