@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { EnemyBlast } from "./enemyBlast";
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
-    shootCooldown = 2500;
+    shootCooldown = 3500;
     lastShot = 0;
     health = 2;
 
@@ -38,9 +38,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     override update(time: number, bullets: Phaser.Physics.Arcade.Group) {
+        if (this.y > this.scene.scale.height + this.height) {
+            this.setActive(false);
+            this.setVisible(false);
+        }
+
         if (time > this.lastShot + this.shootCooldown) {
-          this.shoot(bullets);
-          this.lastShot = time;
+            this.shoot(bullets);
+            this.lastShot = time;
         }
     }
 
@@ -51,6 +56,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         blast.body!.velocity.y = 280;
         blast.flipY = true;
 
+        this.scene.sound.play('enemyShot', { volume: 0.1, loop: false })
         blast.setActive(true).setVisible(true).play('enemy_bullet');
     }
 
@@ -65,7 +71,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    private explode() {
+    explode() {
         this.scene.physics.add.sprite(this.x, this.y, 'death')
                 .setOrigin(0.5)
                 .setVelocityY(this.body!.velocity.y)

@@ -13,6 +13,7 @@ export class Battle extends BaseScene {
     scoreText!: Phaser.GameObjects.Text;
     livesText!: Phaser.GameObjects.Text;
     player!: Player;
+    healthIcons: Phaser.GameObjects.Image[] = [];
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     spacebar?: Phaser.Input.Keyboard.Key;
     bullets!: Phaser.Physics.Arcade.Group;
@@ -40,9 +41,12 @@ export class Battle extends BaseScene {
         this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png')
         this.load.image('arrow', 'assets/imgs/general/arrow.png')
         this.load.image('shot', 'assets/imgs/general/shot.png')
+        this.load.image('health', 'assets/imgs/player/Health.png')
         this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
         this.load.audio('explosion', 'assets/sounds/explosion.ogg')
-        this.load.audio('playerexplosion', 'assets/sounds/playerexplosion.ogg')
+        this.load.audio('playerExplosion', 'assets/sounds/playerexplosion.ogg')
+        this.load.audio('enemyShot', 'assets/sounds/enemyshot.ogg')
+        this.load.audio('playerShot', 'assets/sounds/playershot.ogg')
     }
 
     create() {
@@ -69,7 +73,7 @@ export class Battle extends BaseScene {
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [0, 1], offsetY: 10, alpha: 0.2, flipX: true },
+            { scale: 0.15, origin: [0, 1], offsetX: -10, offsetY: 10, alpha: 0.3, flipX: true },
             () => this.moveLeft = true,
             () => this.moveLeft = false
         );
@@ -81,7 +85,7 @@ export class Battle extends BaseScene {
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [1, 1], offsetY: 10, alpha: 0.2 },
+            { scale: 0.15, origin: [1, 1], offsetX: 10, offsetY: 10, alpha: 0.3 },
             () => this.moveRight = true,
             () => this.moveRight = false
         );
@@ -93,7 +97,7 @@ export class Battle extends BaseScene {
             100,
             btnHeight + 80,
             'shot',
-            { scale: 3, origin: [1, 1], offsetX: -10, offsetY: 120, alpha: 0.1, rotation: Phaser.Math.DegToRad(-90) },
+            { scale: 2, origin: [1, 1], offsetX: 18, offsetY: 90, alpha: 0.3, rotation: Phaser.Math.DegToRad(-90) },
             () => this.tryShoot = true,
             () => this.tryShoot = false
         );
@@ -118,19 +122,15 @@ export class Battle extends BaseScene {
             }
         }).setOrigin(0, 0);
 
-        this.livesText = this.add.text(this.scale.width / 2 - 10, 12, `Lives: ${this.player.getLives()}`, {
-            fontFamily: 'pixel_font',
-            fontSize: '11px',
-            color: '#e09f3c',
-            shadow: {
-                offsetX: 0,
-                offsetY: 0,
-                color: '#00000',
-                blur: 3,
-                stroke: true,
-                fill: true
-            }
-        }).setOrigin(0.32, 0);
+        for (let i = 0; i < this.player.getLives(); i++) {
+            const heart = this.add.image(this.scale.width / 2 - 35 + (i * 40), 20, 'health')
+                .setScale(0.7)
+                .setScrollFactor(0)
+                .setDepth(2)
+                .setOrigin(0.5);
+
+            this.healthIcons.push(heart);
+        }
 
         this.add.text(this.scale.width - 15, 12, this.playerName, {
             fontFamily: 'pixel_font',
@@ -184,11 +184,11 @@ export class Battle extends BaseScene {
         );
           
         this.time.addEvent({
-            delay: 1200,
+            delay: 1000,
             callback: () => {
                 const x = Phaser.Math.Between(50, this.scale.width - 50);
                 const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
-                const speed = Phaser.Math.Between(120, 250);
+                const speed = Phaser.Math.Between(120, 220);
                 const newEnemy = new Enemy(this, x, -50, skin);
                 this.enemies.add(newEnemy);
                 newEnemy.setVelocityY(speed);
@@ -217,9 +217,14 @@ export class Battle extends BaseScene {
             }
 
             this.enemies.children.iterate((enemy: Phaser.GameObjects.GameObject) => {
-                (enemy as Enemy).update(time, this.enemyBullets);
+                if (enemy.active) {
+                    (enemy as Enemy).update(time, this.enemyBullets);
+                }
+                
                 return true;
             });
+
+            this.player.update();
         }
     }
 
@@ -230,7 +235,7 @@ export class Battle extends BaseScene {
             const isDead = enemy.takeHit();
 
             if (isDead) {
-                this.sound.play('explosion', { volume: 0.3 })
+                this.sound.play('explosion', { volume: 0.5 })
                 this.player.addScore(1);
                 this.scoreText.setText(`Score: ${this.player.getData('score')}`);
             }
@@ -246,7 +251,7 @@ export class Battle extends BaseScene {
             damage = 2;
             const isDead = damaginObj.takeHit(damage);
             if (isDead) {
-                this.sound.play('explosion', { volume: 0.3 })
+                this.sound.play('explosion', { volume: 0.5 })
             }
         }
 
@@ -255,7 +260,10 @@ export class Battle extends BaseScene {
         if (this.player.loseLife(damage)) {
             this.isGameOver = true;
             
-            this.updateLivesText();
+            this.updateLives();
+
+            this.player.setVelocityY(-45);
+            this.player.setAngularVelocity(10);
 
             this.music.stop();
             this.spawnExplosionsRafagas();
@@ -268,38 +276,41 @@ export class Battle extends BaseScene {
                 });
             });
         } else {
-            this.cameras.main.shake(200, 0.01);
-            this.updateLivesText();
+            this.cameras.main.shake(200, 0.015);
+            this.updateLives();
         }
     }
     
-    updateLivesText() {
-        this.livesText.setText(`Lives: ${this.player.getLives()}`);
+    updateLives() {
+        const currentLives = this.player.getLives();
+
+        this.healthIcons.forEach((icon, index) => {
+            icon.setVisible(index < currentLives);
+        })
     }
 
     spawnExplosionsRafagas() {
-        const centerX = this.player.x;
-        const centerY = this.player.y;
-
         const offsets = [
             { x: -5, y: -40 },
             { x: -20, y: -20 },
             { x: 10, y: -20 }
         ];
 
-        let count = 0;
-
-        const interval = this.time.addEvent({
+        this.time.addEvent({
             delay: 800,
             repeat: 2,
             callback: () => {
+                const centerX = this.player.x;
+                const centerY = this.player.y;
+
                 offsets.forEach(offset => {
                     this.add.sprite(centerX + offset.x, centerY + offset.y, 'death')
                         .setOrigin(0.5)
-                        .play('death');
+                        .play('death')
+                        .setDepth(3);
                 });
-                this.sound.play('playerexplosion', { volume: 0.1 })
-                count++;
+                
+                this.sound.play('playerExplosion', { volume: 0.2 })
             }
         });
     }
