@@ -4,14 +4,19 @@ import { BaseScene } from './BaseScene';
 export class Menu extends BaseScene {
 	inputElement!: Phaser.GameObjects.DOMElement;
 	inputElements!: Phaser.GameObjects.DOMElement;
-	playerName: string = '';
 	errorText!: Phaser.GameObjects.Text;
 	music!: Phaser.Sound.WebAudioSound;
+
+	playerName: string = '';
 
 	constructor() {
 		super('menu');
 	}
 
+	/**
+	 * Preloads assets required by the menu scene.
+	 * Includes logo image, form HTML and background music.
+	 */
 	override preload() {
 		super.preload();
 		this.load.html('userForm', 'assets/html/userForm.html')
@@ -19,6 +24,10 @@ export class Menu extends BaseScene {
 		this.load.audio('generalbso', 'assets/sounds/generalbso.ogg')
 	}
 
+	/**
+	 * Creates the menu scene with background, logo, form and music.
+	 * Handles click and keyboard events for player input.
+	 */
 	create() {
 		this.createBackground();
 
@@ -45,19 +54,28 @@ export class Menu extends BaseScene {
 		this.inputElement.addListener('click');
 		this.inputElement.on('click', (event: any) => {
 				if (event.target.name === 'startButton') {
-					this.procesarEntrada();
+					this.processInput();
 				}
 		});
 	
 		this.input.keyboard?.on('keydown-ENTER', () => {
-			this.procesarEntrada();
+			this.processInput();
 		});
 	}
+
+	/**
+	 * Scrolls the background slowly while in the menu scene.
+	 */
 	override update() {
 		this.scrollBackground(0.1);
 	}
-		
-	private procesarEntrada() {
+	
+	/**
+	 * Processes the input form.
+	 * If the name is valid, the game starts.
+	 * Otherwise, displays an error message.
+	 */
+	processInput() {
 		const input = this.inputElement.getChildByName('playerName') as HTMLInputElement;
 		const errorMessage = this.inputElement.getChildByID('errorMessage') as HTMLParagraphElement;
 	

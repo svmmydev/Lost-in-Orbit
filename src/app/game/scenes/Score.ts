@@ -1,24 +1,29 @@
 import * as Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
-import { SceneHelpers } from '../utils/manageGameState';
+import { SceneHelpers } from '../utils/managers/GameStateManager';
 
 export class Score extends BaseScene {
+    music!: Phaser.Sound.BaseSound;
     scoreText!: Phaser.GameObjects.Text;
+    storedScores: { [key: string]: number } = {};
+    
     playerName: string = 'Anónimo';
     finalScore: number = 0;
-    storedScores: { [key: string]: number } = {};
-    music!: Phaser.Sound.BaseSound;
 
     constructor() {
         super('score');
     }
 
+    /**
+     * Initializes the score scene with data from the battle scene.
+     * Updates the stored high score if the current score is greater.
+     * @param data Contains the current score and player name.
+     */
     init(data: { score: number, playerName: string }) {
         this.finalScore = data.score;
         this.playerName = data.playerName ?? 'Anónimo';
 
         const scores = this.registry.get('playerScores') ?? {};
-
         const previousRecord = scores[this.playerName] ?? 0;
 
         if (this.finalScore > previousRecord) {
@@ -29,6 +34,9 @@ export class Score extends BaseScene {
         this.storedScores = scores;
     }
 
+    /**
+     * Preloads HTML UI elements for the leaderboard and buttons.
+     */
     override preload() {
         super.preload();
         
@@ -36,10 +44,14 @@ export class Score extends BaseScene {
         this.load.html('leaderboardHTML', 'assets/html/leaderboard.html');
     }
 
+    /**
+     * Creates the score scene, leaderboard, buttons and music.
+     */
     create() {
         this.createBackground();
         this.createLeaderboard();
 
+        // Sound config
         const soundConfig: Phaser.Types.Sound.SoundConfig = {
             loop: true,
             volume: 0.3
@@ -48,6 +60,7 @@ export class Score extends BaseScene {
         this.music = this.sound.add('generalbso', soundConfig) as Phaser.Sound.WebAudioSound;
         this.music.play();
 
+        // Inputs
         this.input.keyboard?.on('keydown-N', () => {
             this.music.stop();
             this.scene.stop();
@@ -65,7 +78,11 @@ export class Score extends BaseScene {
         });
     }
 
+    /**
+     * Renders the leaderboard DOM and populates it with stored scores.
+     */
     private createLeaderboard() {
+        // HTML UI
         const leaderboardDOM = this.add.dom(this.scale.width / 2, this.scale.height / 2)
             .createFromCache('leaderboardHTML')
             .setOrigin(0.5);
@@ -74,6 +91,7 @@ export class Score extends BaseScene {
             .createFromCache('scoreUi')
             .setOrigin(0.5, 1);
 
+        // Buttons events
         buttonsUi.addListener('click');
         buttonsUi.on('click', (event: any) => {
             switch (event.target.id) {
@@ -90,6 +108,7 @@ export class Score extends BaseScene {
             }
         });
 
+        // Leaderboard rank list
         const ul = leaderboardDOM.getChildByID('scoreList') as HTMLUListElement;
 
         if (Object.keys(this.storedScores).length === 0) { 
@@ -115,6 +134,9 @@ export class Score extends BaseScene {
         }
     }
 
+    /**
+     * Scrolls the background slowly during the score screen.
+     */
     override update() {
         this.scrollBackground(0.1);
     }

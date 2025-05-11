@@ -1,5 +1,4 @@
-import { SceneHelpers } from "../utils/manageGameState";
-import { Battle } from "./Battle";
+import { SceneHelpers } from "../utils/managers/GameStateManager";
 
 export class Pause extends Phaser.Scene {
     music!: Phaser.Sound.WebAudioSound;
@@ -8,17 +7,28 @@ export class Pause extends Phaser.Scene {
         super('pause');
     }
 
+    /**
+     * Receives music data from the battle scene.
+     * @param data Object containing the music instance.
+     */
     init(data: { music?: Phaser.Sound.WebAudioSound }) {
         this.music = data.music!;
     }
 
+    /**
+     * Preloads the HTML UI used in the pause scene.
+     */
     preload() {
         this.load.html('menuUi', 'assets/html/menuUi.html')
     }
 
+    /**
+     * Creates pause menu text, keyboard events, and UI buttons.
+     */
     create() {
         const { width, height } = this.scale;
     
+        // UI
         this.add.text(width / 2, height / 2 - 50, 'P A U S E', {
             fontSize: '25px',
             fontFamily: 'pixel_font',
@@ -48,6 +58,7 @@ export class Pause extends Phaser.Scene {
             }
         }).setOrigin(0.5);
 
+        // Buttons
         const buttonsUi = this.add.dom(this.scale.width / 2, this.scale.height / 2 + 150)
             .createFromCache('menuUi');
 
@@ -66,6 +77,7 @@ export class Pause extends Phaser.Scene {
             }
         });
   
+        // Inputs
         this.input.keyboard?.on('keydown-P', () => {
             this.resumeGame();
         });
@@ -79,6 +91,9 @@ export class Pause extends Phaser.Scene {
         });
     }
 
+    /**
+     * Resumes the battle scene and restores the UI and music volume.
+     */
     resumeGame() {
         if (this.music) {
             this.music.setVolume(0.3);
@@ -86,20 +101,23 @@ export class Pause extends Phaser.Scene {
 
         const battleScene = this.scene.get('battle') as any;
 
-        battleScene.moveLeftBtn.setVisible(true);
-        battleScene.moveRightBtn.setVisible(true);
-        battleScene.fireBtn.setVisible(true);
-        battleScene.pauseBtn.setVisible(true);
+        battleScene.showGameUI();
 
         this.scene.stop();
         this.scene.resume('battle');
     }
 
+    /**
+     * Restarts the battle scene using SceneHelpers.
+     */
     resetGame() {
         SceneHelpers.restartBattle(this);
         this.scene.stop();
     }
 
+    /**
+     * Stops current scenes and returns to the menu scene.
+     */
     newPlayer() {
         SceneHelpers.stopToMenu(this);
         this.scene.stop();

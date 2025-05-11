@@ -3,46 +3,69 @@ import { Player } from '../models/player/player';
 import { PlayerBlast } from '../models/player/playerBlast';
 import { Enemy } from '../models/enemy/enemy';
 import { BaseScene } from './BaseScene';
-import { createTouchButton } from '../utils/touchControlHelper';
+import { HUDManager } from '../utils/managers/HUDManager';
+import { EnemyGenerator } from '../utils/generators/EnemyGenerator';
+import { ExplosionManager } from '../utils/managers/ExplosionManager';
+import { PauseManager } from '../utils/managers/PauseManager';
+import { TouchControlsManager } from '../utils/managers/TouchControlsManager';
+import { PlayerController } from '../utils/controllers/PlayerController';
+import { CollisionManager } from '../utils/managers/CollisionManager';
+import { GameFlowManager } from '../utils/managers/GameFlowManager';
 
 export class Battle extends BaseScene {
-    playerName: string = 'Anónimo';
-    moveLeft = false;
-    moveRight = false;
-    tryShoot = false;
-    scoreText!: Phaser.GameObjects.Text;
-    livesText!: Phaser.GameObjects.Text;
-    player!: Player;
-    healthIcons: Phaser.GameObjects.Image[] = [];
+    // MANAGER
+    private hudManager!: HUDManager;
+    private enemySpawner!: EnemyGenerator;
+    private explosionManager!: ExplosionManager;
+    private pauseManager!: PauseManager;
+    private touchControls!: TouchControlsManager;
+    private playerController!: PlayerController;
+    private collisionManager!: CollisionManager;
+    private gameFlowManager!: GameFlowManager;
+
+    // COMMON GAME VARIABLE
+    isGameOver!: boolean;
+    isSceneReady = false;
+    music!: Phaser.Sound.WebAudioSound;
+    pauseBtn!: Phaser.GameObjects.DOMElement;
     cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     spacebar?: Phaser.Input.Keyboard.Key;
-    bullets!: Phaser.Physics.Arcade.Group;
+
+    // MODELS VARIABLE
+    player!: Player;
+    playerName: string = 'Anonymous';
     enemies!: Phaser.Physics.Arcade.Group;
     enemyBullets!: Phaser.Physics.Arcade.Group;
-    isGameOver!: boolean;
-    music!: Phaser.Sound.WebAudioSound;
-    isSceneReady = false;
-    pauseBtn!: Phaser.GameObjects.DOMElement;
-    moveLeftBtn!: Phaser.GameObjects.Image;
-    moveRightBtn!: Phaser.GameObjects.Image;
-    fireBtn!: Phaser.GameObjects.Image;
-
+    bullets!: Phaser.Physics.Arcade.Group;
 
     constructor() {
         super('battle');
     }
 
+    /**
+     * Receives data passed when starting the scene.
+     * @param data Initial data (e.g. player name).
+     */
     init(data: any) {
-        this.playerName = data.playerName ?? 'Anónimo';
+        this.playerName = data.playerName ?? 'Anonymous';
     }
 
+    /**
+     * Preloads assets required by the scene.
+     */
     override preload() {
         super.preload();
+
+        // HMTL
         this.load.html('pauseBtn', 'assets/html/pauseButton.html')
+
+        // SPRITE
         this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 })
         this.load.spritesheet('enemyBlast', 'assets/imgs/sprites/EnemyBlaster.png', { frameWidth: 9, frameHeight: 27 })
         this.load.spritesheet('death', 'assets/imgs/sprites/Explosion1.png', { frameWidth: 64, frameHeight: 64 })
+
+        // IMAGE
         this.load.image('enemy1', 'assets/imgs/enemy/Enemy1.png')
         this.load.image('enemy2', 'assets/imgs/enemy/Enemy2.png')
         this.load.image('enemy3', 'assets/imgs/enemy/Enemy3.png')
@@ -51,6 +74,8 @@ export class Battle extends BaseScene {
         this.load.image('health', 'assets/imgs/player/Health.png')
         this.load.image('start', 'assets/imgs/general/start.png')
         this.load.image('pause', 'assets/imgs/general/pause.png')
+
+        // AUDIO
         this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
         this.load.audio('explosion', 'assets/sounds/explosion.ogg')
         this.load.audio('playerExplosion', 'assets/sounds/playerexplosion.ogg')
@@ -58,72 +83,42 @@ export class Battle extends BaseScene {
         this.load.audio('playerShot', 'assets/sounds/playershot.ogg')
     }
 
+    /**
+     * Sets up all game objects, managers and controls.
+     */
     create() {
+        this.isGameOver = false;
+
         this.createBackground();
 
+        // Touch buttons
+        this.touchControls = new TouchControlsManager(this);
+        this.touchControls.createButtons();
+
+        // Sound config
         const soundConfig: Phaser.Types.Sound.SoundConfig = {
             loop: true,
             volume: 0.3
         }
 
         this.music = this.sound.add('battlesong', soundConfig) as Phaser.Sound.WebAudioSound;
-
         this.music.play();
-        
-        this.isGameOver = false;
 
-        const btnWidth = this.scale.width / 2;
-        const btnHeight = 120;
-
-        this.moveLeftBtn = createTouchButton(
-            this,
-            0,
-            this.scale.height,
-            btnWidth,
-            btnHeight,
-            'arrow',
-            { scale: 0.10, origin: [0, 1], offsetX: -40, offsetY: 20, alpha: 0.3, flipX: true },
-            () => this.moveLeft = true,
-            () => this.moveLeft = false
-        );
-
-        this.moveRightBtn = createTouchButton(
-            this,
-            this.scale.width,
-            this.scale.height,
-            btnWidth,
-            btnHeight,
-            'arrow',
-            { scale: 0.10, origin: [1, 1], offsetX: 40, offsetY: 20, alpha: 0.3 },
-            () => this.moveRight = true,
-            () => this.moveRight = false
-        );
-
-        this.fireBtn = createTouchButton(
-            this,
-            this.scale.width,
-            this.scale.height - 120,
-            100,
-            btnHeight + 80,
-            'shot',
-            { scale: 2, origin: [1, 1], offsetX: 18, offsetY: 90, alpha: 0.3, rotation: Phaser.Math.DegToRad(-90) },
-            () => this.tryShoot = true,
-            () => this.tryShoot = false
-        );
-
+        // Pause
         this.pauseBtn = this.add.dom(this.scale.width - 20, 90)
             .createFromCache('pauseBtn')
             .setOrigin(1, 0)
             .setScale(0.9);
+        
+        this.pauseManager = new PauseManager(
+            this,
+            this.pauseBtn,
+            this.music,
+            () => this.pauseGame()
+        );
+        this.pauseManager.enable();
 
-        this.pauseBtn.addListener('click');
-
-        this.pauseBtn.on('click', (event: any) => {
-            if (event.target.id === 'pauseBtn') {
-                this.pauseGame();
-            }
-        });
-
+        // Player
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
 
@@ -131,120 +126,73 @@ export class Battle extends BaseScene {
         this.player.setOrigin(0.5, 1);
         this.player.reset();
         this.player.setData('score', 0);
-        this.updateLives();
 
-        this.add.text(15, 40, this.playerName, {
-            fontFamily: 'pixel_font',
-            fontSize: '13px',
-            color: '#e09f3c',
-            shadow: {
-                offsetX: 0,
-                offsetY: 0,
-                color: '#00000',
-                blur: 3,
-                stroke: true,
-                fill: true
-            }
-        }).setOrigin(0, 0);
-
-        this.scoreText = this.add.text(15, 70, 'Score: 0', {
-            fontFamily: 'pixel_font',
-            fontSize: '13px',
-            color: '#e09f3c',
-            shadow: {
-                offsetX: 0,
-                offsetY: 0,
-                color: '#00000',
-                blur: 3,
-                stroke: true,
-                fill: true
-            }
-        }).setOrigin(0, 0);
-
-        this.healthIcons.forEach(icon => icon.destroy());
-        this.healthIcons = [];
-
-        for (let i = 0; i < this.player.getLives(); i++) {
-            const heart = this.add.image(this.scale.width - 15 + (i * - 45), 50, 'health')
-                .setScale(0.9)
-                .setScrollFactor(0)
-                .setDepth(2)
-                .setOrigin(1, 0);
-
-            this.healthIcons.push(heart);
-        }
-
+        // User buttons
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.spacebar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
+        // Bullets
         this.bullets = this.physics.add.group({
             classType: PlayerBlast,
             runChildUpdate: true
         });
 
-        this.enemies = this.physics.add.group();
+        // Player controller
+        this.playerController = new PlayerController(
+            this.player,
+            this.cursors!,
+            this.spacebar!,
+            this.touchControls,
+            this.bullets
+        );
 
+        // HUD
+        this.hudManager = new HUDManager(this, this.player, this.playerName);
+        this.hudManager.updateLives();
+
+        this.explosionManager = new ExplosionManager(this, this.player);
+
+        this.gameFlowManager = new GameFlowManager({
+            player: this.player,
+            music: this.music,
+            scene: this,
+            explosionManager: this.explosionManager,
+            pauseButton: this.pauseBtn,
+            hideTouchUI: () => this.touchControls.hideButtons(),
+            getScore: () => this.player.getData('score'),
+            playerName: this.playerName
+        });
+
+        // Enemy
+        this.enemies = this.physics.add.group();
         this.enemyBullets = this.physics.add.group();
 
-        this.physics.add.overlap(
+        this.enemySpawner = new EnemyGenerator(this, this.enemies);
+        this.enemySpawner.startSpawning(1000);
+
+        // Collision
+        this.collisionManager = new CollisionManager(
+            this,
             this.player,
+            this.enemies,
             this.enemyBullets,
-            this.handlePlayerHit as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
-            undefined,
-            this
-        );
-
-        this.physics.add.overlap(
-            this.player,
-            this.enemies,
-            this.handlePlayerHit as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
-            undefined,
-            this
-        );
-
-        this.physics.add.overlap(
             this.bullets,
-            this.enemies,
-            this.handlePlayerBulletHitsEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
-            undefined,
-            this
+            {
+                onPlayerHit: this.handlePlayerHit as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+                onPlayerBulletHitsEnemy: this.handlePlayerBulletHitsEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback
+            }
         );
 
-        this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                const x = Phaser.Math.Between(50, this.scale.width - 50);
-                const skin = Phaser.Math.RND.pick(['enemy1', 'enemy2', 'enemy3']);
-                const speed = Phaser.Math.Between(120, 220);
-                const newEnemy = new Enemy(this, x, -50, skin);
-                this.enemies.add(newEnemy);
-                newEnemy.setVelocityY(speed);
-            },
-            callbackScope: this,
-            loop: true,
-        });
-
-        this.input.keyboard?.on('keydown-P', () => {
-            this.pauseGame();
-        });
-
-        this.game.events.on(Phaser.Core.Events.BLUR, this.handlePause, this);
-        this.game.events.on(Phaser.Core.Events.HIDDEN, this.handlePause, this);
-
-        document.addEventListener('visibilitychange', this.onVisibilityChange);
         this.isSceneReady = true;
     }
 
+    /**
+     * Main update loop. Handles enemy updates and player input.
+     * @param time Current game time.
+     */
     override update(time: number) {
         if (!this.isGameOver) {
             this.scrollBackground(0.7);
-
-            this.player.move(this.cursors!, this.moveLeft, this.moveRight);
-
-            if (Phaser.Input.Keyboard.JustDown(this.spacebar!) || this.tryShoot) {
-                this.player.shoot(this.bullets, time);
-                this.tryShoot = false;
-            }
 
             this.enemies.children.iterate((enemy: Phaser.GameObjects.GameObject) => {
                 if (enemy.active) {
@@ -254,41 +202,15 @@ export class Battle extends BaseScene {
                 return true;
             });
 
-            this.player.update();
+            this.playerController.update(time);
         }
     }
 
-    onVisibilityChange = () => {
-        if (document.visibilityState === 'hidden') {
-            this.handlePause();
-        }
-    };
-
-
-    handlePause() {
-        if (!this.isSceneReady) return;
-
-        if (!this.scene.isActive('pause')) {
-            this.pauseGame();
-            
-        }
-    }
-
-    handlePlayerBulletHitsEnemy(bullet: Phaser.GameObjects.GameObject, enemy: Phaser.GameObjects.GameObject) {
-        bullet.destroy();
-
-        if (enemy instanceof Enemy) {
-            const isDead = enemy.takeHit();
-
-            if (isDead) {
-                this.sound.play('explosion', { volume: 0.5 })
-                this.player.addScore(1);
-                this.scoreText.setText(`Score: ${this.player.getData('score')}`);
-            }
-        }
-    }
-
-    handlePlayerHit (playerObj: Phaser.GameObjects.GameObject, damaginObj: Phaser.GameObjects.GameObject) {
+    /**
+     * Handles collision when the player is hit.
+     * Applies damage and ends the game if necessary.
+     */
+    private handlePlayerHit = (playerObj: Phaser.GameObjects.GameObject, damaginObj: Phaser.GameObjects.GameObject): void => {
         if (this.isGameOver) return;
 
         let damage = 1;
@@ -297,80 +219,53 @@ export class Battle extends BaseScene {
             damage = 2;
             const isDead = damaginObj.takeHit(damage);
             if (isDead) {
-                this.sound.play('explosion', { volume: 0.5 })
+                this.sound.play('explosion', { volume: 0.5 });
             }
         }
 
         damaginObj.destroy();
-      
+
         if (this.player.loseLife(damage)) {
             this.isGameOver = true;
-            
-            this.updateLives();
 
-            this.player.setVelocityY(-45);
-            this.player.setAngularVelocity(10);
-
-            this.music.stop();
-            this.spawnExplosionsRafagas();
-            this.pauseBtn.setVisible(false);
-            this.moveLeftBtn.setVisible(false);
-            this.moveRightBtn.setVisible(false);
-            this.fireBtn.setVisible(false);
-            this.pauseBtn.setVisible(false);
-
-            this.time.delayedCall(3600, () => {
-                this.music.stop();
-                this.shutdown();
-                this.scene.start('score', {
-                    score: this.player.getData('score'),
-                    playerName: this.playerName
-                });
-            });
+            this.hudManager.updateLives();
+            this.gameFlowManager.endGame();
         } else {
             this.cameras.main.shake(200, 0.015);
-            this.updateLives();
+            this.hudManager.updateLives();
         }
-    }
-    
-    updateLives() {
-        const currentLives = this.player.getLives();
+    };
 
-        this.healthIcons.forEach((icon, index) => {
-            icon.setVisible(index < currentLives);
-        })
-    }
+    /**
+     * Handles collision when a player bullet hits an enemy.
+     * Destroys the enemy and increases score if killed.
+     */
+    private handlePlayerBulletHitsEnemy = (bullet: Phaser.GameObjects.GameObject, enemy: Phaser.GameObjects.GameObject): void => {
+        bullet.destroy();
 
-    spawnExplosionsRafagas() {
-        const offsets = [
-            { x: -5, y: -40 },
-            { x: -20, y: -20 },
-            { x: 10, y: -20 }
-        ];
-
-        this.time.addEvent({
-            delay: 800,
-            repeat: 2,
-            callback: () => {
-                const centerX = this.player.x;
-                const centerY = this.player.y;
-
-                offsets.forEach(offset => {
-                    this.add.sprite(centerX + offset.x, centerY + offset.y, 'death')
-                        .setOrigin(0.5)
-                        .play('death')
-                        .setDepth(3);
-                });
-                
-                this.sound.play('playerExplosion', { volume: 0.2 })
+        if (enemy instanceof Enemy) {
+            const isDead = enemy.takeHit();
+            if (isDead) {
+                this.sound.play('explosion', { volume: 0.5 });
+                this.player.addScore(1);
+                this.hudManager.updateScore();
             }
-        });
+        }
+    };
+
+    /**
+     * Shows mobile UI buttons.
+     */
+    showGameUI() {
+        this.touchControls.showButtons();
+        this.pauseBtn.setVisible(true);
     }
 
+    /**
+     * Pauses the game and launches the pause scene.
+     */
     pauseGame() {
-        this.moveLeftBtn.setVisible(false);
-        this.moveRightBtn.setVisible(false);
-        this.fireBtn.setVisible(false);
+        this.touchControls.hideButtons();
         this.pauseBtn.setVisible(false);
 
         this.scene.launch('pause', { music: this.music });
@@ -378,15 +273,14 @@ export class Battle extends BaseScene {
         this.music.setVolume(0.02);
     }
 
+    /**
+     * Cleans up UI and sound before exiting or changing scenes.
+     */
     shutdown() {
-        this.moveLeftBtn.setVisible(false);
-        this.moveRightBtn.setVisible(false);
-        this.fireBtn.setVisible(false);
+        this.touchControls.hideButtons();
         this.pauseBtn.setVisible(false);
 
-        document.removeEventListener('visibilitychange', this.onVisibilityChange);
-        this.game.events.off(Phaser.Core.Events.BLUR, this.handlePause, this);
-        this.game.events.off(Phaser.Core.Events.HIDDEN, this.handlePause, this);
+        this.pauseManager.disable();
 
         this.sound.stopAll();
     }

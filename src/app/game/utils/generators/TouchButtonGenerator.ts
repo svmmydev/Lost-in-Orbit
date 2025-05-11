@@ -1,4 +1,20 @@
 
+
+/**
+ * Creates a touch-sensitive rectangular button with an associated image.
+ * Useful for mobile on-screen controls.
+ *
+ * @param scene The Phaser scene where the button is created.
+ * @param x The x-coordinate of the button.
+ * @param y The y-coordinate of the button.
+ * @param width Width of the touch area (rectangle).
+ * @param height Height of the touch area (rectangle).
+ * @param imageKey The key of the image to display on top of the button.
+ * @param imageOptions Visual options for the image (scale, offset, origin, etc.).
+ * @param onDown Callback triggered when the button is pressed.
+ * @param onUp Callback triggered when the button is released or pointer exits.
+ * @returns The image object associated with the button.
+ */
 export function createTouchButton(
     scene: Phaser.Scene,
     x: number,
