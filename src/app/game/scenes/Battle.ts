@@ -201,7 +201,7 @@ export class Battle extends BaseScene {
                 
                 return true;
             });
-
+            
             this.playerController.update(time);
         }
     }
@@ -227,8 +227,9 @@ export class Battle extends BaseScene {
 
         if (this.player.loseLife(damage)) {
             this.isGameOver = true;
-
             this.hudManager.updateLives();
+
+            this.shutdown();
             this.gameFlowManager.endGame();
         } else {
             this.cameras.main.shake(200, 0.015);
@@ -263,14 +264,18 @@ export class Battle extends BaseScene {
 
     /**
      * Pauses the game and launches the pause scene.
+     * Prevents to show the Pause scene if the plaer is dead.
+     * Score scene coming inmediately.
      */
     pauseGame() {
-        this.touchControls.hideButtons();
-        this.pauseBtn.setVisible(false);
-
-        this.scene.launch('pause', { music: this.music });
-        this.scene.pause();
-        this.music.setVolume(0.02);
+        if (!this.isGameOver) {
+            this.touchControls.hideButtons();
+            this.pauseBtn.setVisible(false);
+            
+            this.scene.launch('pause', { music: this.music });
+            this.scene.pause();
+            this.music.setVolume(0.02);
+        }
     }
 
     /**
