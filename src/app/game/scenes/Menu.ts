@@ -24,7 +24,7 @@ export class Menu extends BaseScene {
 
 		const soundConfig: Phaser.Types.Sound.SoundConfig = {
 			loop: true,
-			volume: 0.08
+			volume: 0.3
 		}
 		
 		this.music = this.sound.add('generalbso', soundConfig) as Phaser.Sound.WebAudioSound;

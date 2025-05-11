@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { BaseScene } from './BaseScene';
+import { SceneHelpers } from '../utils/manageGameState';
 
 export class Score extends BaseScene {
     scoreText!: Phaser.GameObjects.Text;
@@ -16,14 +17,13 @@ export class Score extends BaseScene {
         this.finalScore = data.score;
         this.playerName = data.playerName ?? 'Anónimo';
 
-        const scoresJson = localStorage.getItem('playerScores');
-        const scores = scoresJson ? JSON.parse(scoresJson) : {};
+        const scores = this.registry.get('playerScores') ?? {};
 
         const previousRecord = scores[this.playerName] ?? 0;
 
         if (this.finalScore > previousRecord) {
             scores[this.playerName] = this.finalScore;
-            localStorage.setItem('playerScores', JSON.stringify(scores));
+            this.registry.set('playerScores', scores);
         }
 
         this.storedScores = scores;
@@ -31,7 +31,8 @@ export class Score extends BaseScene {
 
     override preload() {
         super.preload();
-
+        
+        this.load.html('scoreUi', 'assets/html/scoreUi.html');
         this.load.html('leaderboardHTML', 'assets/html/leaderboard.html');
     }
 
@@ -41,7 +42,7 @@ export class Score extends BaseScene {
 
         const soundConfig: Phaser.Types.Sound.SoundConfig = {
             loop: true,
-            volume: 0.08
+            volume: 0.3
         }
                 
         this.music = this.sound.add('generalbso', soundConfig) as Phaser.Sound.WebAudioSound;
@@ -68,6 +69,26 @@ export class Score extends BaseScene {
         const leaderboardDOM = this.add.dom(this.scale.width / 2, this.scale.height / 2)
             .createFromCache('leaderboardHTML')
             .setOrigin(0.5);
+        
+        const buttonsUi = this.add.dom(this.scale.width / 2, this.scale.height - 25)
+            .createFromCache('scoreUi')
+            .setOrigin(0.5, 1);
+
+        buttonsUi.addListener('click');
+        buttonsUi.on('click', (event: any) => {
+            switch (event.target.id) {
+                case 'repeatBtn':
+                    SceneHelpers.restartBattle(this);
+                    this.scene.stop();
+                    this.music.stop();
+                    break;
+                case 'newPlayerBtn':
+                    SceneHelpers.stopToMenu(this);
+                    this.scene.stop();
+                    this.music.stop();
+                    break;
+            }
+        });
 
         const ul = leaderboardDOM.getChildByID('scoreList') as HTMLUListElement;
 

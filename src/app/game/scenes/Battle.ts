@@ -21,6 +21,12 @@ export class Battle extends BaseScene {
     enemyBullets!: Phaser.Physics.Arcade.Group;
     isGameOver!: boolean;
     music!: Phaser.Sound.WebAudioSound;
+    isSceneReady = false;
+    pauseBtn!: Phaser.GameObjects.DOMElement;
+    moveLeftBtn!: Phaser.GameObjects.Image;
+    moveRightBtn!: Phaser.GameObjects.Image;
+    fireBtn!: Phaser.GameObjects.Image;
+
 
     constructor() {
         super('battle');
@@ -32,6 +38,7 @@ export class Battle extends BaseScene {
 
     override preload() {
         super.preload();
+        this.load.html('pauseBtn', 'assets/html/pauseButton.html')
         this.load.spritesheet('player', 'assets/imgs/sprites/PlayerRed.png', { frameWidth: 64, frameHeight: 64 })
         this.load.spritesheet('playerBlast', 'assets/imgs/sprites/PlayerBlaster.png', { frameWidth: 24, frameHeight: 31 })
         this.load.spritesheet('enemyBlast', 'assets/imgs/sprites/EnemyBlaster.png', { frameWidth: 9, frameHeight: 27 })
@@ -42,6 +49,8 @@ export class Battle extends BaseScene {
         this.load.image('arrow', 'assets/imgs/general/arrow.png')
         this.load.image('shot', 'assets/imgs/general/shot.png')
         this.load.image('health', 'assets/imgs/player/Health.png')
+        this.load.image('start', 'assets/imgs/general/start.png')
+        this.load.image('pause', 'assets/imgs/general/pause.png')
         this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
         this.load.audio('explosion', 'assets/sounds/explosion.ogg')
         this.load.audio('playerExplosion', 'assets/sounds/playerexplosion.ogg')
@@ -54,7 +63,7 @@ export class Battle extends BaseScene {
 
         const soundConfig: Phaser.Types.Sound.SoundConfig = {
             loop: true,
-            volume: 0.08
+            volume: 0.3
         }
 
         this.music = this.sound.add('battlesong', soundConfig) as Phaser.Sound.WebAudioSound;
@@ -66,31 +75,31 @@ export class Battle extends BaseScene {
         const btnWidth = this.scale.width / 2;
         const btnHeight = 120;
 
-        createTouchButton(
+        this.moveLeftBtn = createTouchButton(
             this,
             0,
             this.scale.height,
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [0, 1], offsetX: -40, offsetY: 10, alpha: 0.3, flipX: true },
+            { scale: 0.10, origin: [0, 1], offsetX: -40, offsetY: 20, alpha: 0.3, flipX: true },
             () => this.moveLeft = true,
             () => this.moveLeft = false
         );
 
-        createTouchButton(
+        this.moveRightBtn = createTouchButton(
             this,
             this.scale.width,
             this.scale.height,
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [1, 1], offsetX: 40, offsetY: 10, alpha: 0.3 },
+            { scale: 0.10, origin: [1, 1], offsetX: 40, offsetY: 20, alpha: 0.3 },
             () => this.moveRight = true,
             () => this.moveRight = false
         );
 
-        createTouchButton(
+        this.fireBtn = createTouchButton(
             this,
             this.scale.width,
             this.scale.height - 120,
@@ -102,15 +111,31 @@ export class Battle extends BaseScene {
             () => this.tryShoot = false
         );
 
+        this.pauseBtn = this.add.dom(this.scale.width - 20, 90)
+            .createFromCache('pauseBtn')
+            .setOrigin(1, 0)
+            .setScale(0.9);
+
+        this.pauseBtn.addListener('click');
+
+        this.pauseBtn.on('click', (event: any) => {
+            if (event.target.id === 'pauseBtn') {
+                this.pauseGame();
+            }
+        });
+
         const centerX = this.scale.width / 2;
         const bottomY = this.scale.height;
 
         this.player = new Player(this, centerX, bottomY - 40);
         this.player.setOrigin(0.5, 1);
+        this.player.reset();
+        this.player.setData('score', 0);
+        this.updateLives();
 
         this.add.text(15, 40, this.playerName, {
             fontFamily: 'pixel_font',
-            fontSize: '17px',
+            fontSize: '13px',
             color: '#e09f3c',
             shadow: {
                 offsetX: 0,
@@ -124,7 +149,7 @@ export class Battle extends BaseScene {
 
         this.scoreText = this.add.text(15, 70, 'Score: 0', {
             fontFamily: 'pixel_font',
-            fontSize: '17px',
+            fontSize: '13px',
             color: '#e09f3c',
             shadow: {
                 offsetX: 0,
@@ -135,6 +160,9 @@ export class Battle extends BaseScene {
                 fill: true
             }
         }).setOrigin(0, 0);
+
+        this.healthIcons.forEach(icon => icon.destroy());
+        this.healthIcons = [];
 
         for (let i = 0; i < this.player.getLives(); i++) {
             const heart = this.add.image(this.scale.width - 15 + (i * - 45), 50, 'health')
@@ -173,7 +201,6 @@ export class Battle extends BaseScene {
             undefined,
             this
         );
-        
 
         this.physics.add.overlap(
             this.bullets,
@@ -182,7 +209,7 @@ export class Battle extends BaseScene {
             undefined,
             this
         );
-          
+
         this.time.addEvent({
             delay: 1000,
             callback: () => {
@@ -198,11 +225,14 @@ export class Battle extends BaseScene {
         });
 
         this.input.keyboard?.on('keydown-P', () => {
-            this.scene.launch('pause', { music: this.music });
-            this.scene.pause();
-            this.music.setVolume(0.02);
+            this.pauseGame();
         });
-          
+
+        this.game.events.on(Phaser.Core.Events.BLUR, this.handlePause, this);
+        this.game.events.on(Phaser.Core.Events.HIDDEN, this.handlePause, this);
+
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+        this.isSceneReady = true;
     }
 
     override update(time: number) {
@@ -225,6 +255,22 @@ export class Battle extends BaseScene {
             });
 
             this.player.update();
+        }
+    }
+
+    onVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+            this.handlePause();
+        }
+    };
+
+
+    handlePause() {
+        if (!this.isSceneReady) return;
+
+        if (!this.scene.isActive('pause')) {
+            this.pauseGame();
+            
         }
     }
 
@@ -267,9 +313,15 @@ export class Battle extends BaseScene {
 
             this.music.stop();
             this.spawnExplosionsRafagas();
+            this.pauseBtn.setVisible(false);
+            this.moveLeftBtn.setVisible(false);
+            this.moveRightBtn.setVisible(false);
+            this.fireBtn.setVisible(false);
+            this.pauseBtn.setVisible(false);
 
-            this.time.delayedCall(3000, () => {
+            this.time.delayedCall(3600, () => {
                 this.music.stop();
+                this.shutdown();
                 this.scene.start('score', {
                     score: this.player.getData('score'),
                     playerName: this.playerName
@@ -313,5 +365,29 @@ export class Battle extends BaseScene {
                 this.sound.play('playerExplosion', { volume: 0.2 })
             }
         });
+    }
+
+    pauseGame() {
+        this.moveLeftBtn.setVisible(false);
+        this.moveRightBtn.setVisible(false);
+        this.fireBtn.setVisible(false);
+        this.pauseBtn.setVisible(false);
+
+        this.scene.launch('pause', { music: this.music });
+        this.scene.pause();
+        this.music.setVolume(0.02);
+    }
+
+    shutdown() {
+        this.moveLeftBtn.setVisible(false);
+        this.moveRightBtn.setVisible(false);
+        this.fireBtn.setVisible(false);
+        this.pauseBtn.setVisible(false);
+
+        document.removeEventListener('visibilitychange', this.onVisibilityChange);
+        this.game.events.off(Phaser.Core.Events.BLUR, this.handlePause, this);
+        this.game.events.off(Phaser.Core.Events.HIDDEN, this.handlePause, this);
+
+        this.sound.stopAll();
     }
 }

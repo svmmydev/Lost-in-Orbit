@@ -120,24 +120,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     
     loseLife(damage: number = 1): boolean {
-        // if (this.lives <= 0) return true;
+        if (this.lives <= 0) return true;
 
         this.lives -= damage;
 
-        // if (this.lives <= 0) {
-        //     this.lives = 0;
-        //     this.isDead = true;
-        //     this.setVelocity(0);
-        //     this.anims.play('idle', true);
-        //     this.thruster.setVisible(false);
+        if (this.lives <= 0) {
+            this.lives = 0;
+            this.isDead = true;
+            this.setVelocity(0);
+            this.anims.play('idle', true);
+            this.thruster.setVisible(false);
 
-        //     return true;
-        // }
+            return true;
+        }
 
         return false;
     }
 
     getLives(): number {
         return this.lives;
+    }
+
+    reset(): void {
+        this.lives = 3;
+        this.isDead = false;
+        this.setVelocity(0);
+        this.setAngularVelocity(0);
+        this.setRotation(0);
+        this.setFlipX(false);
+        this.setVisible(true);
+        this.thruster.setVisible(true);
+        this.anims.play('idle', true);
     }
 }

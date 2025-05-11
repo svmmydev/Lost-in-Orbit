@@ -14,8 +14,6 @@ export class GameComponent implements OnInit, OnDestroy {
     game!: Phaser.Game;
 
     ngOnInit() {
-        const dpr = window.devicePixelRatio || 1;
-
         const width = window.innerWidth;
         const height = window.innerHeight;
 
@@ -25,12 +23,10 @@ export class GameComponent implements OnInit, OnDestroy {
             height: height,
             parent: 'game',
             backgroundColor: '#000',
-            scene: [ Menu, Battle, Score, Pause ],
+            scene: [ Menu, Battle, Pause, Score],
             scale: {
                 mode: Phaser.Scale.NONE,
                 autoCenter: Phaser.Scale.CENTER_BOTH,
-                width: window.innerWidth,
-                height: window.innerHeight
             },
             input: {
                 activePointers: 3,

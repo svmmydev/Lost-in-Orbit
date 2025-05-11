@@ -36,4 +36,6 @@ export function createTouchButton(
     btn.on('pointerdown', onDown);
     btn.on('pointerup', onUp);
     btn.on('pointerout', onUp);
+
+    return img;
 }
