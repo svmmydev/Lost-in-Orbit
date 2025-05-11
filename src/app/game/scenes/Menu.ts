@@ -40,7 +40,7 @@ export class Menu extends BaseScene {
 			.setOrigin(0.5)
 			.setScale(0.25);
 	
-		this!.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 2).createFromCache('userForm').setOrigin(0.5, 0);
+		this!.inputElement = this.add.dom(this.scale.width / 2, this.scale.height / 2).createFromCache('userForm').setOrigin(0.5, 0).setDepth(999);
 	
 		this.inputElement.addListener('click');
 		this.inputElement.on('click', (event: any) => {

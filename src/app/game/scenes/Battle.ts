@@ -64,7 +64,7 @@ export class Battle extends BaseScene {
         this.isGameOver = false;
 
         const btnWidth = this.scale.width / 2;
-        const btnHeight = 90;
+        const btnHeight = 120;
 
         createTouchButton(
             this,
@@ -73,7 +73,7 @@ export class Battle extends BaseScene {
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [0, 1], offsetX: -10, offsetY: 10, alpha: 0.3, flipX: true },
+            { scale: 0.15, origin: [0, 1], offsetX: -40, offsetY: 10, alpha: 0.3, flipX: true },
             () => this.moveLeft = true,
             () => this.moveLeft = false
         );
@@ -85,7 +85,7 @@ export class Battle extends BaseScene {
             btnWidth,
             btnHeight,
             'arrow',
-            { scale: 0.15, origin: [1, 1], offsetX: 10, offsetY: 10, alpha: 0.3 },
+            { scale: 0.15, origin: [1, 1], offsetX: 40, offsetY: 10, alpha: 0.3 },
             () => this.moveRight = true,
             () => this.moveRight = false
         );
@@ -93,7 +93,7 @@ export class Battle extends BaseScene {
         createTouchButton(
             this,
             this.scale.width,
-            this.scale.height - 90,
+            this.scale.height - 120,
             100,
             btnHeight + 80,
             'shot',
@@ -108,9 +108,23 @@ export class Battle extends BaseScene {
         this.player = new Player(this, centerX, bottomY - 40);
         this.player.setOrigin(0.5, 1);
 
-        this.scoreText = this.add.text(15, 12, 'Score: 0', {
+        this.add.text(15, 40, this.playerName, {
             fontFamily: 'pixel_font',
-            fontSize: '11px',
+            fontSize: '17px',
+            color: '#e09f3c',
+            shadow: {
+                offsetX: 0,
+                offsetY: 0,
+                color: '#00000',
+                blur: 3,
+                stroke: true,
+                fill: true
+            }
+        }).setOrigin(0, 0);
+
+        this.scoreText = this.add.text(15, 70, 'Score: 0', {
+            fontFamily: 'pixel_font',
+            fontSize: '17px',
             color: '#e09f3c',
             shadow: {
                 offsetX: 0,
@@ -123,28 +137,14 @@ export class Battle extends BaseScene {
         }).setOrigin(0, 0);
 
         for (let i = 0; i < this.player.getLives(); i++) {
-            const heart = this.add.image(this.scale.width / 2 - 35 + (i * 40), 20, 'health')
-                .setScale(0.7)
+            const heart = this.add.image(this.scale.width - 15 + (i * - 45), 50, 'health')
+                .setScale(0.9)
                 .setScrollFactor(0)
                 .setDepth(2)
-                .setOrigin(0.5);
+                .setOrigin(1, 0);
 
             this.healthIcons.push(heart);
         }
-
-        this.add.text(this.scale.width - 15, 12, this.playerName, {
-            fontFamily: 'pixel_font',
-            fontSize: '11px',
-            color: '#e09f3c',
-            shadow: {
-                offsetX: 0,
-                offsetY: 0,
-                color: '#00000',
-                blur: 3,
-                stroke: true,
-                fill: true
-            }
-        }).setOrigin(1, 0);
 
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.spacebar = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
