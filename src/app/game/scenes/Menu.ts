@@ -21,7 +21,7 @@ export class Menu extends BaseScene {
 		super.preload();
 		this.load.html('userForm', 'assets/html/userForm.html')
 		this.load.image('logo', 'assets/imgs/general/lostinorbit.png')
-		this.load.audio('generalbso', 'assets/sounds/generalbso.ogg')
+		this.load.audio('generalbso', 'assets/sounds/generalbso.mp3', 'assets/sounds/generalbso.ogg')
 	}
 
 	/**

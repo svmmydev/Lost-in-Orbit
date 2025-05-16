@@ -76,11 +76,11 @@ export class Battle extends BaseScene {
         this.load.image('pause', 'assets/imgs/general/pause.png')
 
         // AUDIO
-        this.load.audio('battlesong', 'assets/sounds/battlesong.ogg')
-        this.load.audio('explosion', 'assets/sounds/explosion.ogg')
-        this.load.audio('playerExplosion', 'assets/sounds/playerexplosion.ogg')
-        this.load.audio('enemyShot', 'assets/sounds/enemyshot.ogg')
-        this.load.audio('playerShot', 'assets/sounds/playershot.ogg')
+        this.load.audio('battlesong', 'assets/sounds/battlesong.mp3', 'assets/sounds/battlesong.ogg')
+        this.load.audio('explosion', 'assets/sounds/explosion.mp3', 'assets/sounds/explosion.ogg')
+        this.load.audio('playerExplosion', 'assets/sounds/playerexplosion.mp3', 'assets/sounds/playerexplosion.ogg')
+        this.load.audio('enemyShot', 'assets/sounds/enemyshot.mp3', 'assets/sounds/enemyshot.ogg')
+        this.load.audio('playerShot', 'assets/sounds/playershot.mp3', 'assets/sounds/playershot.ogg')
     }
 
     /**
